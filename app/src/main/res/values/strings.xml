@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MangoPos</string>
+    <string name="Invoices">Invoices</string>
+    <string name="Discount">Discount</string>
+    <string name="Chart">Chart</string>
+    <string name="Setting">Setting</string>
+    <string name="Transaction">Transaction</string>
+</resources>
