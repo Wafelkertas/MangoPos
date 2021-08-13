@@ -15,7 +15,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.mangopos.data.dummyData
-import com.example.mangopos.presentation.component.ListComponent
+import com.example.mangopos.presentation.component.ListComponentInvoices
+
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -40,8 +41,8 @@ fun InvoicesScreen() {
         ) {
             Column {
 
-            Spacer(modifier = Modifier.height(20.dp))
-            ListComponent(data)
+                Spacer(modifier = Modifier.height(20.dp))
+                ListComponentInvoices(data)
             }
         }
     }
