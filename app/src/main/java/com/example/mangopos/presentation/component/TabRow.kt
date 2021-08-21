@@ -1,12 +1,12 @@
 package com.example.mangopos.presentation.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
+import android.util.Log
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.material.Tab
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -27,11 +27,12 @@ fun TabRow(
 
 
 
-    androidx.compose.material.TabRow(
+    TabRow(
+        backgroundColor = Color(0xFFffDD49),
         selectedTabIndex = tabIndex,
         modifier = Modifier
             .fillMaxWidth()
-            .requiredHeight(50.dp)
+            .requiredHeight(40.dp)
             .padding(0.dp)
             .shadow(10.dp)
 
@@ -48,24 +49,36 @@ fun TabRow(
 }
 
 
+@ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @Composable
 fun AnimatedTabRow(
     currentDestination: NavDestination,
     navController: NavController,
-    tabData: List<Screen>
+    tabData: List<Screen>,
+    drawerState: BottomDrawerState
 ) {
     var visible by remember {
         mutableStateOf(true)
     }
 
-    if (!currentDestination?.hierarchy?.any() { it.route == Screen.Setting.route }) {
+
+
+    if (drawerState.isClosed || (!currentDestination.hierarchy.any() { it.route == Screen.Setting.route } ) ) {
         visible = true
-    } else if (currentDestination?.hierarchy?.any() { it.route == Screen.Setting.route }) {
+    }
+    if (drawerState.isExpanded || (currentDestination.hierarchy.any() { it.route == Screen.Setting.route })) {
         visible = false
     }
+
     AnimatedVisibility(
-        visible = visible
+        visible = visible,
+        enter = slideInVertically(initialOffsetY = { fullWidth -> -fullWidth / 3 }) + fadeIn(
+            animationSpec = tween(durationMillis = 300, delayMillis = 100)
+        ),
+        exit = slideOutVertically(targetOffsetY = { fullWidth -> -fullWidth / 3 }) + fadeOut(
+            animationSpec = tween(durationMillis = 300, delayMillis = 100)
+        )
     ) {
 
         TabRow(

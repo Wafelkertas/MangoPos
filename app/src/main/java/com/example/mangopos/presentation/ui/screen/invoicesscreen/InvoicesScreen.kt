@@ -15,7 +15,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.mangopos.data.dummyData
+import com.example.mangopos.presentation.component.InvoicesHeaderList
 import com.example.mangopos.presentation.component.ListComponentInvoices
+import com.example.mangopos.presentation.ui.theme.fff6c2
 
 
 @ExperimentalFoundationApi
@@ -27,22 +29,24 @@ fun InvoicesScreen() {
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(MaterialTheme.colors.secondary),
+            .background(fff6c2),
         contentAlignment = Alignment.Center
     ) {
 
-        Surface(
-            modifier = Modifier
-                .shadow(5.dp, RoundedCornerShape(10.dp))
-                .clip(RoundedCornerShape(5.dp))
-                .requiredHeight(400.dp)
-                .width(800.dp)
-                .background(Color.White)
-        ) {
-            Column {
+        Column {
+            Spacer(modifier = Modifier.height(10.dp))
+            InvoicesHeaderList()
+            Surface(
+                color = Color.Transparent,
+                modifier = Modifier
+                    .requiredHeight(400.dp)
+                    .width(800.dp)
+            ) {
+                Column {
 
-                Spacer(modifier = Modifier.height(20.dp))
-                ListComponentInvoices(data)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    ListComponentInvoices(data)
+                }
             }
         }
     }

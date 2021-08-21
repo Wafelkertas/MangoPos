@@ -12,4 +12,7 @@ sealed class Screen(
     object Chart:Screen(route = "Chart", screenString = R.string.Chart)
     object Setting:Screen(route = "Setting", screenString = R.string.Setting)
     object Transaction:Screen(route = "Transaction", screenString = R.string.Transaction)
+    object Login:Screen(route = "Login", screenString = R.string.Login)
+    object MainScreen:Screen(route = "MainScreen", screenString = R.string.MainScreen)
+    object Register:Screen(route = "Register", screenString = R.string.Register)
 }
