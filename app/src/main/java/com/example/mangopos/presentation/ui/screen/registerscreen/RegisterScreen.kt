@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mangopos.presentation.ui.navigation.Screen
-import com.example.mangopos.presentation.ui.theme.fff6c2
+import com.example.mangopos.presentation.ui.theme.*
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
@@ -32,7 +32,7 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(fff6c2),
+            .background(ijo),
         contentAlignment = Alignment.Center
     ) {
 
@@ -52,7 +52,7 @@ fun RegisterScreen(
                     modifier = Modifier
                         .height(100.dp)
                         .width(400.dp),
-                    color = MaterialTheme.colors.secondary
+                    color = cff6c2
                 )
                 {
                     Box(

@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.mangopos.presentation.ui.navigation.Screen
 
 @Composable
@@ -40,7 +41,13 @@ fun TabRow(
         tabData.forEachIndexed { index, screen ->
             Tab(selected = tabIndex == index, onClick = {
                 tabIndex = index
-                navController.navigate(screen.route)
+                navController.navigate(screen.route){
+                    popUpTo("Transaction"){
+                        inclusive =true
+
+                    }
+                    launchSingleTop = true
+                }
             }, text = { Text(text = screen.route, color = Color.Black, fontSize = 18.sp) })
         }
     }
