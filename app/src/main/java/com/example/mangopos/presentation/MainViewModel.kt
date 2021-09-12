@@ -1,26 +1,38 @@
 package com.example.mangopos.presentation
 
+import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
+import android.graphics.*
 import android.util.Log
+import android.view.Gravity
+import android.view.View
+import android.widget.LinearLayout
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mangopos.R
 import com.example.mangopos.data.objects.dto.*
+import com.example.mangopos.data.objects.model.PDFObject
 import com.example.mangopos.data.repository.AuthRepository
 import com.example.mangopos.data.repository.InvoicesRepository
 import com.example.mangopos.data.repository.MenuRepository
 import com.example.mangopos.data.repository.OrderRepository
 import com.example.mangopos.utils.Resource
-import com.example.mangopos.utils.URIPathHelper
 
 import com.example.mangopos.utils.dispatcher.DispatcherProvider
+import com.example.mangopos.utils.newAddedToList
+import com.tejpratapsingh.pdfcreator.utils.FileManager
+import com.tejpratapsingh.pdfcreator.utils.PDFUtil
+import com.tejpratapsingh.pdfcreator.views.basic.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.util.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.net.URI
+import java.io.File
+import java.lang.Error
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,10 +46,11 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-
     // Global State
     val accessToken = mutableStateOf("")
     val sharePref = mutableStateOf("")
+
+    val isRefresing: StateFlow<Boolean?> = MutableStateFlow(null)
 
 
     // Error Handling for Login
@@ -56,6 +69,8 @@ class MainViewModel @Inject constructor(
     val networkCategoryErrorMessage = mutableStateOf("")
     val networkCategoryError = mutableStateOf<Boolean?>(null)
 
+    val networkPayOrderError = mutableStateOf<Boolean?>(null)
+
     // Error Handling for Chart
     val networkChartErrorMessage = mutableStateOf("")
     val networkChartError = mutableStateOf<Boolean?>(null)
@@ -63,14 +78,22 @@ class MainViewModel @Inject constructor(
     val networkSingleOrderError = mutableStateOf<Boolean?>(null)
     val networkSingleOrderErrorMessage = mutableStateOf("")
 
+    val updateMenuStatus = mutableStateOf<Boolean?>(null)
+    val createMenuStatus = mutableStateOf<Boolean?>(null)
+
+
     // Variable to hold drawer state edit order or new order
     val editOrder = mutableStateOf<Boolean?>(null)
+    val checkoutOrder = mutableStateOf<Boolean>(false)
 
     // State for list of Object
+    val listOfChartItem = mutableStateOf<List<ChartItem>>(listOf())
     val listOfOrder = mutableStateOf<List<OrderItem>>(listOf())
     val listOfMenu = mutableStateOf<List<MenuItem>>(listOf())
     val listOfInvoices = mutableStateOf<List<InvoicesItem>>(listOf())
     val listOfCategory = mutableStateOf<List<Category?>>(listOf(null))
+
+    val invoicesResponse = mutableStateOf<InvoicesResponse?>(null)
 
     val orderResponse = mutableStateOf<OrderResponse?>(null)
 
@@ -84,10 +107,13 @@ class MainViewModel @Inject constructor(
     val updateOrderStatus = mutableStateOf<Boolean?>(null)
 
     val editMenu = mutableStateOf<MenuItem?>(null)
+    val invoicesDetail = mutableStateOf<PaymentInvoicesResponse?>(null)
+    val invoicesEntree = mutableStateOf<InvoicesItem?>(null)
 
     var currentPage = mutableStateOf(1)
     var totalPage = mutableStateOf(0)
     var endReached = mutableStateOf(false)
+    var createPdfStatus = mutableStateOf<Boolean?>(null)
 
 
     var orderUUID: String = ""
@@ -96,13 +122,19 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
 
+            testingWithDelay()
 
-//            delay(500)
 //            loadSharePrefToState()
 //            invoicesRepository.getChartData("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiN2ZmMDJiYjg3M2I5MDg0ZGNiNmRiNmE4N2UzYWEwOWIwOGJjYTdiYzI1YzY2NmJmMWEyMWIxMmEwZmYyNjE4NjQxZjIzYWJkYWRjMDIyMzAiLCJpYXQiOjE2Mjk4NjgwNTUuNzY5NzA4LCJuYmYiOjE2Mjk4NjgwNTUuNzY5NzEsImV4cCI6MTY2MTQwNDA1NS43Njc2NCwic3ViIjoiMSIsInNjb3BlcyI6W119.CqCLuSXI_J1YsdJY6_e-7xmDFYaUa2eUt8jKNM6i6xKgDslxS0qzMoBde1300zpalWPGrAl6FUtYcmU47DnJZV3Q5uut5YEFoKklamD3zcDRoPkZrfHpYoj7Uvutjj1FKE_kduESm4Hdnqog_S1qCSFkL1rPJExsRpuYJAHsnbNJwqvtrol5TZKFKfDiWXpw8mJk9E7Fo5-b8IxXouVKX_gUS1i6wypZZcOURLuOImB_NcI5HdMF0cE9wmhZjDuNF2l-KWvVZhSp0_i_RusOBYA8joHNL9wy9eApmbWqvc1k4N5_soCvdZiWYQ_g-h3SaBmlbzlGXVJGva1HGi5T7rNFwOGteWFirYAYG_YwW60JBdYEWJfZ9uWry3PYpV6eB6G2STZvOAh2htU3XcS-HP5x7dyvCVUWrB5IECjBAaohMrN4L0eWxIE7ogIbHbCtA21SkHapsrysdVV9haKYiijzzg5x6e9p14DOpjIXyO206oXlXpFnyh3z740Xl8FPHkl5bQn7wvl5duVxWDnEC9VTX-0-Tc8QHgUEzAVe3SVo0h3RlrxeBYLDwMjcbIz1A36pR2D33R7jPyHDB-nGMK2j2clDW8jdNTilc09X0P8con2afRevU2UNv1P7oMgDbX-eFV2DrXwamZYl3XZIa--RQRUff8QDOFHzJBgAYu4")
 
 
+        }
+    }
 
+    private fun testingWithDelay(){
+        viewModelScope.launch {
+            delay(10000)
+            Log.d("listOfChartItem", listOfChartItem.value.toString())
         }
     }
 
@@ -150,7 +182,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun filterMenuToBeEdited(uuid:String){
+    fun filterMenuToBeEdited(uuid: String) {
         val menuEdit = listOfMenu.value.filter { menuItem ->
             menuItem.uuid == uuid
         }
@@ -160,8 +192,28 @@ class MainViewModel @Inject constructor(
     }
 
 
+    fun getInvoicesDetail(noInvoices: String, accessToken: String) {
+        viewModelScope.launch(dispatchers.io) {
+            val response =
+                orderRepository.getNoInvoices(accessToken = accessToken, noInvoices = noInvoices)
 
-    fun getAllCategory(accessToken: String){
+            when (response) {
+                is Resource.Success -> {
+
+                    invoicesDetail.value = response.data
+
+
+                }
+
+                is Resource.Error -> {
+
+                }
+            }
+        }
+    }
+
+
+    fun getAllCategory(accessToken: String) {
         viewModelScope.launch(dispatchers.io) {
             val response = menuRepository.getListCategory(accessToken = accessToken)
 
@@ -181,7 +233,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getInvoicesList(accessToken: String){
+    fun getChartData(accessToken: String){
+        viewModelScope.launch(dispatchers.io) {
+            val response = invoicesRepository.getChartData(accessToken = accessToken)
+
+            when (response) {
+                is Resource.Success -> {
+
+                    listOfChartItem.value = response.data!!.listChartData
+
+
+                }
+
+
+            }
+        }
+    }
+
+    fun getInvoicesList(accessToken: String) {
         viewModelScope.launch(dispatchers.io) {
             val response = invoicesRepository.getListInvoices(accessToken = accessToken)
 
@@ -189,6 +258,31 @@ class MainViewModel @Inject constructor(
                 is Resource.Success -> {
 
                     listOfInvoices.value = response.data!!.invoicesItem
+                    invoicesResponse.value = response.data
+
+                }
+
+                is Resource.Error -> {
+                    networkInvoicesError.value = true
+                    networkInvoicesErrorMessage.value = response.message.toString()
+
+                }
+            }
+        }
+    }
+
+    fun getAnotherInvoicesList(accessToken: String, page:Int) {
+        viewModelScope.launch(dispatchers.io) {
+            val response = invoicesRepository.getAnotherListInvoices(accessToken = accessToken, page = page)
+
+            when (response) {
+                is Resource.Success -> {
+                    if (response.data!!.invoicesItem.isEmpty()){
+                        listOfInvoices.value = listOfInvoices.value
+                    }
+                    if (response.data.invoicesItem.isNotEmpty()){
+                        listOfInvoices.value = newAddedToList(list = response.data.invoicesItem,oldItem = listOfInvoices.value)
+                    }
 
 
                 }
@@ -203,10 +297,10 @@ class MainViewModel @Inject constructor(
     }
 
 
-    fun newOrder(singleOrderRequest: SingleOrderRequest) {
+    fun newOrder(singleOrderRequest: SingleOrderRequest, accessToken: String) {
         viewModelScope.launch(dispatchers.io) {
             val response = orderRepository.newOrder(
-                accessToken = accessToken.value,
+                accessToken = accessToken,
                 singleOrderRequest = singleOrderRequest
             )
             when (response) {
@@ -233,7 +327,8 @@ class MainViewModel @Inject constructor(
         var currentPage = 1
 
         viewModelScope.launch(dispatchers.io) {
-            val firstResponse = orderRepository.getListOrder(accessToken = accessToken, page = 1).data
+            val firstResponse =
+                orderRepository.getListOrder(accessToken = accessToken, page = 1).data
             if (firstResponse != null) {
                 lastPage = firstResponse.lastPage
             }
@@ -249,6 +344,8 @@ class MainViewModel @Inject constructor(
         }
 
     }
+
+
 
     fun editAnOrder(singleOrderRequest: SingleOrderRequest, orderUUID: String) {
         viewModelScope.launch(dispatchers.io) {
@@ -317,26 +414,493 @@ class MainViewModel @Inject constructor(
         }
     }
 
+
+    //TODO Create Pdf Function //
+    fun createPdf(application: Context, pdfObject: PDFObject) {
+        viewModelScope.launch(dispatchers.default) {
+
+            val bitmap = BitmapFactory.decodeResource(
+                application.resources,
+                R.drawable.circlemangomase
+            )
+            val height = 100
+            val width = 100
+
+
+            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, height, width, true)
+
+            val fileManager = FileManager.getInstance()
+            fileManager.cleanTempFolder(application)
+
+            // Inisiasi View
+            val view: MutableList<View> = arrayListOf()
+            // Membuat Layout Utama PDF
+            val verticalPdf = PDFVerticalView(application)
+            // Setting Layout PDF
+            verticalPdf.setLayout(
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+                )
+            )
+
+            // Divider
+            val separator1 = PDFLineSeparatorView(application)
+            val separator2 = PDFLineSeparatorView(application)
+            val separator3 = PDFLineSeparatorView(application)
+            separator1.setBackgroundColor(Color.BLACK)
+            separator2.setBackgroundColor(Color.BLACK)
+            separator3.setBackgroundColor(Color.BLACK)
+
+            val imageHorizontalView = PDFHorizontalView(application)
+            val customerHorizontalView = PDFHorizontalView(application)
+            val totalPriceHorizontalView = PDFHorizontalView(application)
+            val discountHorizontalView = PDFHorizontalView(application)
+            val totalPriceAfterDiscountHorizontalView = PDFHorizontalView(application)
+            val totalSmallPriceAfterDiscountHorizontalView = PDFHorizontalView(application)
+            val customerCash = PDFHorizontalView(application)
+            val customerChange= PDFHorizontalView(application)
+
+
+
+
+            verticalPdf.setPadding(20, 10, 20, 10)
+            val customerLayoutParams =
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 20)
+            customerLayoutParams.setMargins(0, 0, 0, 0)
+            customerHorizontalView.setLayout(
+                customerLayoutParams
+            )
+
+            // Invoices
+            val noInvoices = PDFTextView(
+                application,
+                PDFTextView.PDF_TEXT_SIZE.P
+            ).setText("Invoice No. ${pdfObject.noInvoice}")
+            // Invoices Layout
+            noInvoices.view.setPadding(0, 20, 0, 10)
+            noInvoices.view.gravity = Gravity.CENTER_HORIZONTAL
+
+            // Logo
+            val image = PDFImageView(application).setImageBitmap(scaledBitmap)
+            imageHorizontalView.addView(image)
+            imageHorizontalView.view.gravity = Gravity.CENTER_HORIZONTAL
+
+
+            // Customer Name
+            val customerAttribute =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Customer Name")
+            val customerName =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.customerName)
+
+
+            // Customer Layout
+            customerAttribute.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            customerName.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            customerHorizontalView.addView(customerAttribute)
+            customerHorizontalView.addView(customerName)
+
+            customerAttribute.view.gravity = Gravity.START
+            customerName.view.gravity = Gravity.END
+
+            // List dari cart objek
+            val list = pdfObject.listOfCarts.map { cart ->
+                cartListing(application = application, cart = cart)
+            }
+
+
+            // Total Harga Dan Quantity
+
+            totalPriceHorizontalView.setLayout(
+                customerLayoutParams
+            )
+
+            totalSmallPriceAfterDiscountHorizontalView.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            totalSmallPriceAfterDiscountHorizontalView.view.gravity = Gravity.CENTER_HORIZONTAL
+
+
+            val totalItem =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Total Item")
+            val quantity =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.listOfCarts.map { cart ->
+                    cart.quantity
+                }.sum().toString())
+            val totalHarga =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText((pdfObject.sumTotal.toInt() - pdfObject.discount.toInt()).toString())
+
+            totalPriceHorizontalView.addView(totalItem)
+            totalSmallPriceAfterDiscountHorizontalView.addView(quantity)
+            totalSmallPriceAfterDiscountHorizontalView.addView(totalHarga)
+            totalPriceHorizontalView.addView(totalSmallPriceAfterDiscountHorizontalView)
+
+            totalItem.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            ).view.gravity = Gravity.START
+            quantity.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            ).view.gravity = Gravity.END
+            totalHarga.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            ).view.gravity = Gravity.END
+
+            // Discount
+            discountHorizontalView.setLayout(
+                customerLayoutParams
+            )
+            val discount =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Total Disc")
+            val discountTotal =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.discount)
+
+            discount.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            discountTotal.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+
+            discount.view.gravity = Gravity.START
+            discountTotal.view.gravity = Gravity.END
+
+            discountHorizontalView.addView(discount)
+            discountHorizontalView.addView(discountTotal)
+
+
+            // Total price
+            totalPriceAfterDiscountHorizontalView.setLayout(
+                customerLayoutParams
+            )
+            val totalPriceName =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Total Belanja")
+            val totalPriceAmount =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.sumTotal)
+
+            totalPriceName.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            totalPriceAmount.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+
+            totalPriceName.view.gravity = Gravity.START
+            totalPriceAmount.view.gravity = Gravity.END
+
+            totalPriceAfterDiscountHorizontalView.addView(totalPriceName)
+            totalPriceAfterDiscountHorizontalView.addView(totalPriceAmount)
+
+            // Customer Cash
+            customerCash.setLayout(
+                customerLayoutParams
+            )
+            val customerCashAttrb =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Cash")
+            val customerCashAmount =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.sumTotal)
+
+            customerCashAttrb.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            customerCashAmount.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+
+            customerCashAttrb.view.gravity = Gravity.START
+            customerCashAmount.view.gravity = Gravity.END
+
+            customerCash.addView(customerCashAttrb)
+            customerCash.addView(customerCashAmount)
+
+            // Customer Cash
+            customerChange.setLayout(
+                customerLayoutParams
+            )
+            val customerChangeAttrb =
+                PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText("Change")
+            val customerChangeAmount =
+                PDFTextView(
+                    application,
+                    PDFTextView.PDF_TEXT_SIZE.P
+                ).setText(pdfObject.sumTotal)
+
+            customerChangeAttrb.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+            customerChangeAmount.setLayout(
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    1f
+                )
+            )
+
+            customerChangeAttrb.view.gravity = Gravity.START
+            customerChangeAmount.view.gravity = Gravity.END
+
+            customerChange.addView(customerChangeAttrb)
+            customerChange.addView(customerChangeAmount)
+
+
+
+
+
+            verticalPdf.addView(noInvoices)
+            verticalPdf.addView(imageHorizontalView)
+            verticalPdf.addView(separator1)
+            verticalPdf.addView(customerHorizontalView)
+            verticalPdf.addView(separator2)
+            list.forEach { pdfView ->
+                verticalPdf.addView(pdfView)
+            }
+            verticalPdf.addView(separator3)
+            verticalPdf.addView(totalPriceHorizontalView)
+            verticalPdf.addView(discountHorizontalView)
+            verticalPdf.addView(totalPriceAfterDiscountHorizontalView)
+            verticalPdf.addView(customerCash)
+            verticalPdf.addView(customerChange)
+
+
+            val verticalPdfView = verticalPdf.view
+            view.add(verticalPdfView)
+
+
+            val filename = "invoices"
+
+
+
+            try {
+
+                PDFUtil.getInstance().generatePDF(
+                    view, fileManager.createTempFileWithName(
+                        application,
+                        "$filename.pdf", false
+                    ).absolutePath, object : PDFUtil.PDFUtilListener {
+                        override fun pdfGenerationSuccess(savedPDFFile: File?) {
+
+                            createPdfStatus.value = true
+
+                        }
+
+                        override fun pdfGenerationFailure(exception: Exception?) {
+
+                            createPdfStatus.value = false
+
+                        }
+                    })
+
+            } catch (e: Error) {
+                createPdfStatus.value = false
+                Log.d("IOException", e.toString())
+
+            }
+        }
+    }
+
+    fun cartListing(application: Context, cart: Cart): PDFHorizontalView {
+        val cartHorizontalView = PDFHorizontalView(application)
+        val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 20)
+        layoutParams.setMargins(0, 0, 0, 0)
+        cartHorizontalView.setLayout(
+            layoutParams
+        )
+
+
+        val cartName =
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.menuName)
+        val cartQuantity =
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.quantity.toString())
+        val cartPrice =
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.price)
+        val cartTotalPrice =
+            PDFTextView(
+                application,
+                PDFTextView.PDF_TEXT_SIZE.P
+            ).setText((cart.price.toInt() * cart.quantity).toString())
+
+        cartName.setLayout(
+            LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        )
+        cartQuantity.setLayout(
+            LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        )
+        cartPrice.setLayout(
+            LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        )
+        cartTotalPrice.setLayout(
+            LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        )
+        cartName.view.gravity = Gravity.START
+        cartQuantity.view.gravity = Gravity.END
+        cartPrice.view.gravity = Gravity.END
+        cartTotalPrice.view.gravity = Gravity.END
+
+
+
+        cartHorizontalView.addView(cartName)
+        cartHorizontalView.addView(cartQuantity)
+        cartHorizontalView.addView(cartPrice)
+        cartHorizontalView.addView(cartTotalPrice)
+
+        return cartHorizontalView
+    }
+
+    fun payOrder(accessToken: String, uuid: String, payRequest: PayRequest) {
+        viewModelScope.launch {
+            val response = orderRepository.payOrder(
+                accessToken = accessToken,
+                uuid = uuid,
+                payRequest = payRequest
+            )
+            when (response) {
+                is Resource.Success -> {
+                    networkPayOrderError.value = true
+
+                }
+
+                is Resource.Error -> {
+                    networkPayOrderError.value = false
+                }
+            }
+        }
+    }
+
     @InternalAPI
-    fun createMenu(accessToken: String, menuItem: MenuItem, uri : String){
+    fun createMenu(accessToken: String, menuItem: MenuItem, uri: String) {
         viewModelScope.launch(dispatchers.io) {
-        val response = menuRepository.newMenu(accessToken = accessToken, menuItem = menuItem, uri = uri)
-        Log.d("createMenuInvoked", "createMenuInvoked ${response.message} ")
+            val response =
+                menuRepository.newMenu(accessToken = accessToken, menuItem = menuItem, uri = uri)
+            when (response) {
+
+                is Resource.Success -> {
+                    createMenuStatus.value = true
+
+                }
+
+                is Resource.Error -> {
+                    createMenuStatus.value = false
+
+
+                }
+            }
 
         }
     }
 
     @InternalAPI
-    fun updateMenu(accessToken: String, menuItem: MenuItem, uri : String){
+    fun updateMenu(accessToken: String, menuItem: MenuItem, uri: String) {
         viewModelScope.launch(dispatchers.io) {
-            val response = menuRepository.updateMenu(accessToken = accessToken, menuItem = menuItem, uri = uri)
-            Log.d("createMenuInvoked", "createMenuInvoked ${response.message} ")
+            val response =
+                menuRepository.updateMenu(accessToken = accessToken, menuItem = menuItem, uri = uri)
+            when (response) {
+
+                is Resource.Success -> {
+                    updateMenuStatus.value = true
+
+                }
+
+                is Resource.Error -> {
+                    updateMenuStatus.value = false
+
+
+                }
+            }
 
         }
     }
 
 
-     fun loadSharePrefToState() {
+    fun loadSharePrefToState() {
         viewModelScope.launch(dispatchers.io) {
 
             val sharePrefData = sharedPreferences.getString(R.string.access_token.toString(), "")

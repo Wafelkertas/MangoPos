@@ -33,8 +33,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.MenuItem
 import com.example.mangopos.presentation.MainViewModel
+import com.example.mangopos.presentation.ui.navigation.Screen
 import com.example.mangopos.utils.URIPathHelper
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -47,12 +49,18 @@ import io.ktor.util.*
 @Composable
 fun EditMenuScreen(
     uuid: String,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    navController: NavController
 ) {
     val menuItem by remember { mainViewModel.editMenu }
     val category by remember { mainViewModel.listOfCategory }
     val accessToken by remember { mainViewModel.accessToken }
+    val updateMenuStatus by remember { mainViewModel.updateMenuStatus }
     var dropDownMenu by remember { mutableStateOf(false) }
+
+    if (updateMenuStatus == true) {
+        navController.navigate(Screen.Setting.route)
+    }
 
 
 
@@ -109,21 +117,27 @@ fun EditMenuScreen(
                                 label = { Text(text = "Nama Makanan") },
                                 value = menuName,
                                 onValueChange = { menuName = it },
-                                modifier = Modifier.padding(top = 5.dp, bottom = 5.dp).fillMaxWidth(),
+                                modifier = Modifier
+                                    .padding(top = 5.dp, bottom = 5.dp)
+                                    .fillMaxWidth(),
                                 maxLines = 1
                             )
                             OutlinedTextField(
                                 label = { Text(text = "Harga Makanan") },
                                 value = menuPrice,
                                 onValueChange = { menuPrice = it },
-                                modifier = Modifier.padding(top = 5.dp, bottom = 5.dp).fillMaxWidth(),
+                                modifier = Modifier
+                                    .padding(top = 5.dp, bottom = 5.dp)
+                                    .fillMaxWidth(),
                                 maxLines = 1
                             )
                             OutlinedTextField(
                                 label = { Text(text = "Deksripsi Makanan") },
                                 value = menuDescription,
                                 onValueChange = { menuDescription = it },
-                                modifier = Modifier.padding(top = 5.dp, bottom = 5.dp).fillMaxWidth(),
+                                modifier = Modifier
+                                    .padding(top = 5.dp, bottom = 5.dp)
+                                    .fillMaxWidth(),
                                 maxLines = 2
                             )
 
@@ -138,7 +152,8 @@ fun EditMenuScreen(
                                     .focusable(enabled = true)
                                     .clickable {
                                         dropDownMenu = true
-                                    }.fillMaxWidth()
+                                    }
+                                    .fillMaxWidth()
 
                             )
 
@@ -191,13 +206,20 @@ fun EditMenuScreen(
                             PermissionRequired(
                                 permissionState = permission,
                                 permissionNotGrantedContent = {
-                                    Column {
+                                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "Grant The Permission")
-                                        Button(onClick = { permission.launchPermissionRequest() }) {
-                                            Text(text = "Ok!")
-                                        }
-                                        Button(onClick = { doNotShowRationale = true }) {
-                                            Text(text = "Nope")
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(5.dp),
+                                            horizontalArrangement = Arrangement.SpaceAround
+                                        ) {
+                                            Button(onClick = { permission.launchPermissionRequest() }) {
+                                                Text(text = "Ok!")
+                                            }
+                                            Button(onClick = { doNotShowRationale = true }) {
+                                                Text(text = "Nope")
+                                            }
                                         }
                                     }
                                 },
@@ -226,63 +248,73 @@ fun EditMenuScreen(
                             ) { uri: Uri? ->
                                 imageUri = uri
                             }
+                            Box(
+                                modifier = Modifier.fillMaxSize(0.5f),
+                                contentAlignment = Alignment.Center
+                            ) {
 
-                            imageUri?.let {
-                                if (Build.VERSION.SDK_INT < 28) {
-                                    bitmap.value = MediaStore.Images
-                                        .Media.getBitmap(context.contentResolver, it)
+                                imageUri?.let {
+                                    if (Build.VERSION.SDK_INT < 28) {
+                                        bitmap.value = MediaStore.Images
+                                            .Media.getBitmap(context.contentResolver, it)
 
-                                } else {
-                                    val source = ImageDecoder
-                                        .createSource(context.contentResolver, it)
-                                    bitmap.value = ImageDecoder.decodeBitmap(source)
+                                    } else {
+                                        val source = ImageDecoder
+                                            .createSource(context.contentResolver, it)
+                                        bitmap.value = ImageDecoder.decodeBitmap(source)
+                                    }
+
+                                    bitmap.value?.let { btm ->
+                                        Image(
+                                            bitmap = btm.asImageBitmap(),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(400.dp)
+                                        )
+                                    }
+
                                 }
 
-                                bitmap.value?.let { btm ->
+                                if (imageUri == null) {
+                                    val painter = rememberCoilPainter(request = menuImage)
                                     Image(
-                                        bitmap = btm.asImageBitmap(),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(400.dp)
+                                        painter = painter,
+                                        contentDescription = "makanan",
+                                        modifier = Modifier
+                                            .fillMaxSize(0.5f),
+                                        contentScale = ContentScale.Crop
                                     )
                                 }
-
                             }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp), horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                Button(onClick = {
+                                    launcher.launch("image/*")
+                                }) {
+                                    Text(text = "Pick image")
+                                }
+                                Button(onClick = {
+                                    mainViewModel.updateMenu(
+                                        accessToken = accessToken,
+                                        menuItem = MenuItem(
+                                            categoryUuid = menuCategoryUuid,
+                                            createdAt = "",
+                                            description = menuDescription,
+                                            id = 0,
+                                            image = "",
+                                            name = menuName,
+                                            price = menuPrice,
+                                            updatedAt = "",
+                                            uuid = menuItem!!.uuid
+                                        ),
+                                        uri = realPath
+                                    )
 
-                            if (imageUri == null){
-                                val painter = rememberCoilPainter(request = menuImage)
-                                Image(
-                                    painter = painter,
-                                    contentDescription = "makanan",
-                                    modifier = Modifier
-                                        .fillMaxSize(0.5f)
-                                        .align(Alignment.CenterHorizontally),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            Button(onClick = {
-                                launcher.launch("image/*")
-                            }) {
-                                Text(text = "Pick image")
-                            }
-                            Button(onClick = {
-                                mainViewModel.updateMenu(
-                                    accessToken = accessToken,
-                                    menuItem = MenuItem(
-                                        categoryUuid = menuCategoryUuid,
-                                        createdAt = "",
-                                        description = menuDescription,
-                                        id = 0,
-                                        image = "",
-                                        name = menuName,
-                                        price = menuPrice,
-                                        updatedAt = "",
-                                        uuid = menuItem!!.uuid
-                                    ),
-                                    uri = realPath
-                                )
-
-                            }) {
-                                Text(text = "Update Menu")
+                                }) {
+                                    Text(text = "Update Menu")
+                                }
                             }
                         }
                     }

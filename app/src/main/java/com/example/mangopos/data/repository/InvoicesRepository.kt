@@ -1,6 +1,7 @@
 package com.example.mangopos.data.repository
 
 import com.example.mangopos.data.EndPoints
+import com.example.mangopos.data.objects.dto.Chart
 import com.example.mangopos.data.objects.dto.ChartItem
 import com.example.mangopos.data.objects.dto.InvoicesResponse
 import com.example.mangopos.data.objects.dto.OrderResponse
@@ -16,7 +17,7 @@ class InvoicesRepository(
 
     suspend fun getListInvoices(accessToken : String): Resource<InvoicesResponse> {
         val response = try {
-            api.get<InvoicesResponse>("${EndPoints.BASE_URL}${EndPoints.INVOICES_URL}?page=1") {
+            api.get<InvoicesResponse>("${EndPoints.BASE_URL}${EndPoints.INVOICES_URL}?sort=desc") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header("Authorization", "Bearer $accessToken")
             }
@@ -27,9 +28,22 @@ class InvoicesRepository(
         return Resource.Success(response)
     }
 
-    suspend fun getChartData(accessToken : String): Resource<ChartItem> {
+    suspend fun getAnotherListInvoices(accessToken : String, page:Int): Resource<InvoicesResponse> {
         val response = try {
-            api.get<ChartItem>("${EndPoints.BASE_URL}${EndPoints.INVOICES_URL}/chart") {
+            api.get<InvoicesResponse>("${EndPoints.BASE_URL}${EndPoints.INVOICES_URL}?page=$page&?sort=desc") {
+                header(HttpHeaders.ContentType, ContentType.Application.Json)
+                header("Authorization", "Bearer $accessToken")
+            }
+        }catch (t:Throwable){
+            return errorHandler(t)
+        }
+
+        return Resource.Success(response)
+    }
+
+    suspend fun getChartData(accessToken : String): Resource<Chart> {
+        val response = try {
+            api.get<Chart>("${EndPoints.BASE_URL}${EndPoints.INVOICES_URL}/chart") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header("Authorization", "Bearer $accessToken")
             }

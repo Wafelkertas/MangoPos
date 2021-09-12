@@ -15,4 +15,8 @@
     <string name="OrderMenu">OrderMenu</string>
     <string name="EditMenu">EditMenu</string>
     <string name="CreateMenu">CreateMenu</string>
+    <string name="CheckOutScreen">CheckOutScreen</string>
+    <string name="NewOrder">NewOrder</string>
+    <string name="EditOrder">EditOrder</string>
+    <string name="DetailOrder">DetailOrder</string>
 </resources>

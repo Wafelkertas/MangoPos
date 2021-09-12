@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:orientation="vertical"
+    android:id="@+id/frameLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey_800"
+    tools:context=".PdfViewerActivity">
+
+
+   <com.tejpratapsingh.pdfcreator.custom.ViewPagerForPhotoView
+       android:id="@+id/viewPagerPdfViewer"
+       android:layout_width="wrap_content"
+       android:background="@color/grey_800"
+       android:layout_height="match_parent"
+       tools:ignore="SpeakableTextPresentCheck" />
+
+</FrameLayout>

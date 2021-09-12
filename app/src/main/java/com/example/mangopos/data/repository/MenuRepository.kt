@@ -63,7 +63,6 @@ class MenuRepository(
         uri: String
     ): Resource<UpdateMenuResponse> {
 
-
         val response = try {
             api.post<UpdateMenuResponse>("${EndPoints.BASE_URL}${EndPoints.MENU_URL_PATCH}/${menuItem.uuid}") {
                 header("Authorization", "Bearer $accessToken")
@@ -73,10 +72,15 @@ class MenuRepository(
                         append("name", "${menuItem.name}")
                         append("description", "${menuItem.description}")
                         append("category_uuid", "${menuItem.categoryUuid}")
-                        append("image", File(uri).readBytes(), Headers.build {
-                            append(HttpHeaders.ContentType, ContentType.Image.JPEG)
-                            append(HttpHeaders.ContentDisposition, "filename=$uri")
-                        })
+                        if (uri.isNotEmpty()){
+                            append("image", File(uri).readBytes(), Headers.build {
+                                append(HttpHeaders.ContentType, ContentType.Image.JPEG)
+                                append(HttpHeaders.ContentDisposition, "filename=$uri")
+                            })
+                        }
+                        if (uri.isEmpty()){
+                            append("image", "")
+                        }
 
 
                     }

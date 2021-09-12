@@ -86,3 +86,41 @@ data class SuccessOrderResponse(
     @SerialName("data")
     val successUpdate: Boolean
 )
+
+@Serializable
+data class PayRequest(
+    @SerialName("cash")
+    val cash: Int,
+    @SerialName("money_change")
+    val moneyChange: Int,
+    @SerialName("name")
+    val name: String,
+    @SerialName("quantity")
+    val quantity: Int,
+    @SerialName("total_price")
+    val totalPrice: Int,
+    @SerialName("total")
+    val total: Int
+)
+
+@Serializable
+data class PaymentInvoicesResponse(
+    @SerialName("carts")
+    val carts: List<Cart>,
+    @SerialName("cash")
+    val cash: String,
+    @SerialName("money_change")
+    val moneyChange: String,
+    @SerialName("name")
+    val name: String,
+    @SerialName("no_invoice")
+    val noInvoice: String,
+    @SerialName("quantity")
+    val quantity: String,
+    @SerialName("total_price")
+    val totalPrice: String,
+    @SerialName("total_price_after_discount")
+    val totalPriceAfterDiscount: String,
+    @SerialName("uuid")
+    val uuid: String
+)

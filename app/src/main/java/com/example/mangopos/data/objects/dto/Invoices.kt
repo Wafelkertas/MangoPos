@@ -41,5 +41,6 @@ data class InvoicesItem(
     @SerialName("updated_at")
     val updatedAt: String,
     @SerialName("uuid")
-    val uuid: String
+    val uuid: String,
+
 )

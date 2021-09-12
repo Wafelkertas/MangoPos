@@ -31,8 +31,10 @@ import com.google.accompanist.navigation.animation.composable
 
 import com.example.mangopos.presentation.component.FloatingActionButtonComponent
 import com.example.mangopos.presentation.ui.screen.chartscreen.ChartScreen
+import com.example.mangopos.presentation.ui.screen.checkoutscreen.CheckOutScreen
 
 import com.example.mangopos.presentation.ui.screen.ediorderscreen.EditOrderScreen
+import com.example.mangopos.presentation.ui.screen.invoicesscreen.DetailInvoicesScreen
 import com.example.mangopos.presentation.ui.screen.invoicesscreen.InvoicesScreen
 import com.example.mangopos.presentation.ui.screen.loginscreen.LoginScreen
 import com.example.mangopos.presentation.ui.screen.orderscreen.OrderScreen
@@ -46,7 +48,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 
 @InternalAPI
@@ -66,6 +67,7 @@ fun Navigation(
 
     val listMenuItem by remember { mainViewModel.listOfMenu }
     val editOrderState by remember { mainViewModel.editOrder }
+    val listOfInvoices by remember { mainViewModel.listOfInvoices }
     val listOfOrder by remember { mainViewModel.listOfOrder }
     val accessToken by remember { mainViewModel.accessToken }
 
@@ -78,6 +80,11 @@ fun Navigation(
     val drawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
+    if (accessToken.isNotEmpty()) {
+        LaunchedEffect(key1 = true) {
+            mainViewModel.getAllOrder(accessToken = accessToken)
+        }
+    }
 
 
 
@@ -95,7 +102,7 @@ fun Navigation(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(text = data.message)
-                            if (mainViewModel.networkErrorLogin.value == null && currentDestination?.route == "Login" ) {
+                            if (mainViewModel.networkErrorLogin.value == null && currentDestination?.route == "Login") {
                                 CircularProgressIndicator()
                             }
                         }
@@ -105,7 +112,7 @@ fun Navigation(
         },
         scaffoldState = scaffoldState,
         topBar = {
-            if (!drawerState.isOpen) {
+            if (!drawerState.isOpen && currentDestination?.route != Screen.CheckOutScreen.route) {
 
                 TopAppBar(
                     elevation = 0.dp,
@@ -126,16 +133,16 @@ fun Navigation(
                     ) {
                         if (currentDestination?.route == Screen.Setting.route || currentDestination?.route == "${Screen.EditMenu.route}/{uuid}" || currentDestination?.route == Screen.CreateMenu.route) {
                             IconButton(onClick = {
-                                if (currentDestination?.route == Screen.Setting.route) {
+                                if (currentDestination.route == Screen.Setting.route) {
                                     navController.navigate(Screen.Transaction.route)
                                 }
 
-                                if (currentDestination?.route == "${Screen.EditMenu.route}/{uuid}") {
+                                if (currentDestination.route == "${Screen.EditMenu.route}/{uuid}") {
                                     mainViewModel.editMenu.value = null
                                     navController.navigate(Screen.Setting.route)
                                 }
 
-                                if (currentDestination?.route == Screen.CreateMenu.route) {
+                                if (currentDestination.route == Screen.CreateMenu.route) {
                                     navController.navigate(Screen.Setting.route)
                                 }
                             }) {
@@ -155,7 +162,7 @@ fun Navigation(
                             )
                         }
 
-                        if (currentDestination?.route != Screen.Login.route && currentDestination?.route != "${Screen.EditMenu.route}/{uuid}" && currentDestination?.route != Screen.Setting.route && currentDestination?.route != Screen.CreateMenu.route) {
+                        if (currentDestination?.route != Screen.Login.route && currentDestination?.route != "${Screen.EditMenu.route}/{uuid}" && currentDestination?.route != Screen.Setting.route && currentDestination?.route != Screen.CreateMenu.route && currentDestination?.route != Screen.CheckOutScreen.route) {
                             IconButton(onClick = {
                                 navController.navigate(Screen.Setting.route)
                             }) {
@@ -177,7 +184,7 @@ fun Navigation(
 
         },
         bottomBar = {
-            if (currentDestination != null && currentDestination.route != Screen.Login.route && currentDestination.route != "${Screen.EditMenu.route}/{uuid}" && currentDestination?.route != Screen.CreateMenu.route) {
+            if (currentDestination != null && currentDestination.route != Screen.Login.route && currentDestination.route != "${Screen.EditMenu.route}/{uuid}" && currentDestination?.route != Screen.CreateMenu.route && currentDestination?.route != Screen.CheckOutScreen.route && currentDestination?.route != "${Screen.DetailOrder.route}/{no_invoices}") {
                 AnimatedTabRow(
                     currentDestination = currentDestination,
                     navController = navController,
@@ -187,7 +194,6 @@ fun Navigation(
             }
         },
         floatingActionButton = {
-
 
             if (currentDestination != null) {
                 FloatingActionButtonComponent(
@@ -201,14 +207,7 @@ fun Navigation(
 
         }
     ) {
-        if (accessToken != null) {
 
-            coroutineScope.launch(Dispatchers.IO) {
-
-                mainViewModel.getAllOrder(accessToken = accessToken)
-
-            }
-        }
         BottomDrawer(
             gesturesEnabled = false,
             drawerState = drawerState,
@@ -257,8 +256,20 @@ fun Navigation(
                             mainViewModel = mainViewModel
                         )
                     }
-                    composable(Screen.Invoices.route) { InvoicesScreen(mainViewModel = mainViewModel) }
-                    composable(Screen.CreateMenu.route) { CreateMenuScreen(mainViewModel = mainViewModel) }
+                    composable(Screen.Invoices.route) { InvoicesScreen(mainViewModel = mainViewModel, navController = navController) }
+                    composable(Screen.CheckOutScreen.route) {
+                        CheckOutScreen(
+                            mainViewModel = mainViewModel,
+                            navController = navController,
+                            drawerState = drawerState
+                        )
+                    }
+                    composable(Screen.CreateMenu.route) {
+                        CreateMenuScreen(
+                            mainViewModel = mainViewModel,
+                            navController = navController
+                        )
+                    }
                     composable(
                         "${Screen.EditMenu.route}/{uuid}",
                         arguments = listOf(navArgument("uuid") { type = NavType.StringType })
@@ -266,7 +277,18 @@ fun Navigation(
                         EditMenuScreen(
                             mainViewModel = mainViewModel,
                             uuid = backStackEntry.arguments?.getString("uuid")
-                                .toString()
+                                .toString(), navController = navController
+                        )
+                    }
+                    composable(
+                        "${Screen.DetailOrder.route}/{no_invoices}",
+                        arguments = listOf(navArgument("no_invoices") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        DetailInvoicesScreen(
+                            noInvoices = backStackEntry.arguments?.getString("no_invoices")
+                                .toString(), navController = navController,
+                            mainViewModel = mainViewModel
+
                         )
                     }
                     composable(Screen.Transaction.route,
@@ -312,7 +334,7 @@ fun Navigation(
 
                     }
                     composable(Screen.Chart.route) {
-                        ChartScreen()
+                        ChartScreen(mainViewModel = mainViewModel)
 
                     }
 
@@ -329,11 +351,11 @@ fun Navigation(
             drawerContent = {
 
                 if (currentDestination?.route == Screen.Transaction.route && editOrderState == false) {
-
                     EditOrderScreen(
                         drawerState = drawerState,
                         menuItemList = listMenuItem,
-                        mainViewModel = mainViewModel
+                        mainViewModel = mainViewModel,
+                        navController = navController
                     )
                 }
 
@@ -342,7 +364,8 @@ fun Navigation(
                         coroutineScope = coroutineScope,
                         drawerState = drawerState,
                         menuItemList = listMenuItem,
-                        mainViewModel = mainViewModel
+                        mainViewModel = mainViewModel,
+                        accessToken = accessToken
                     )
                 }
 

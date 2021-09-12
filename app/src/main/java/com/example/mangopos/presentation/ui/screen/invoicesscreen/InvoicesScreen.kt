@@ -6,10 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +15,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.mangopos.presentation.MainViewModel
 
 import com.example.mangopos.presentation.component.InvoicesHeaderList
@@ -29,7 +27,7 @@ import kotlinx.coroutines.delay
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable
-fun InvoicesScreen(mainViewModel: MainViewModel) {
+fun InvoicesScreen(mainViewModel: MainViewModel, navController: NavController) {
 
 
     val listOfInvoice by remember { mainViewModel.listOfInvoices }
@@ -38,11 +36,13 @@ fun InvoicesScreen(mainViewModel: MainViewModel) {
     val accessToken by remember { mainViewModel.accessToken }
 
 
+
+    Log.d("invoicesScreen", listOfInvoice.size.toString())
+
     LaunchedEffect(key1 = true) {
+        mainViewModel.createPdfStatus.value = null
         mainViewModel.getInvoicesList(accessToken = accessToken)
     }
-
-
 
 
     Box(
@@ -94,11 +94,12 @@ fun InvoicesScreen(mainViewModel: MainViewModel) {
                     }
                 }
                 if (listOfInvoice.isNotEmpty()) {
-
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-
-                        ListComponentInvoices(data = listOfInvoice)
+                        ListComponentInvoices(
+                            data = listOfInvoice,
+                            navController = navController,
+                            mainViewModel = mainViewModel
+                        )
                     }
                 }
             }

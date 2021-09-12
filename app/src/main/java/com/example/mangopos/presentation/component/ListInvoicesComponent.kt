@@ -1,14 +1,19 @@
 package com.example.mangopos.presentation.component
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -17,7 +22,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.InvoicesItem
+import com.example.mangopos.presentation.MainViewModel
+import com.example.mangopos.presentation.ui.navigation.Screen
 
 
 import com.example.mangopos.presentation.ui.theme.ffdd49
@@ -29,35 +37,64 @@ Component for Transaction
 * */
 
 
-
-
-
 @Composable
 fun ListComponentInvoices(
-    data: List<InvoicesItem>
+    data: List<InvoicesItem>,
+    navController: NavController,
+    mainViewModel: MainViewModel
 ) {
 
+    val state = rememberLazyListState()
+    val accessToken by remember { mainViewModel.accessToken }
+    val invoiceResponse by remember { mainViewModel.invoicesResponse }
+    var currentPage by remember { mutableStateOf(2) }
+
+
+    var endReached = false
+
+    Log.d("listInvoices", (state.firstVisibleItemIndex + 5).toString())
+
     LazyColumn(
+        state = state,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-
+        val lastIndex = data.lastIndex
         itemsIndexed(items = data) { index, data ->
-
             InvoicesItem(
                 data = data,
-                index = index
+                index = index,
+                navController = navController
             )
 
         }
+
+        item {
+            if (state.firstVisibleItemIndex + 4 == lastIndex) {
+                Button(
+                    onClick = {
+                        mainViewModel.getAnotherInvoicesList(
+                            accessToken = accessToken,
+                            page = currentPage
+                        )
+                        currentPage++
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Load More")
+                }
+            }
+        }
+
+
     }
 }
 
 
 @Composable
-fun InvoicesItem(data: InvoicesItem, index: Int) {
+fun InvoicesItem(data: InvoicesItem, index: Int, navController: NavController) {
 
 
     Surface(
@@ -68,6 +105,9 @@ fun InvoicesItem(data: InvoicesItem, index: Int) {
             .width(800.dp)
             .height(75.dp)
             .padding(5.dp)
+            .clickable {
+                navController.navigate(Screen.DetailOrder.route + "/${data.noInvoice}")
+            }
     ) {
 
 

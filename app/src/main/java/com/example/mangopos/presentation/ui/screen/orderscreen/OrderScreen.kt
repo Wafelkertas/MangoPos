@@ -1,6 +1,7 @@
 package com.example.mangopos.presentation.ui.screen.orderscreen
 
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -50,7 +51,8 @@ fun OrderScreen(
     mainViewModel: MainViewModel,
     coroutineScope: CoroutineScope,
     drawerState: BottomDrawerState,
-    menuItemList: List<MenuItem>
+    menuItemList: List<MenuItem>,
+    accessToken: String
 ) {
     var customerName by remember { mutableStateOf("") }
 
@@ -117,7 +119,8 @@ fun OrderScreen(
                     menuItemList = menuItemList,
                     customerName = customerName,
                     navController = navHost,
-                    onCancelOrder = { customerName = "" }
+                    onCancelOrder = { customerName = "" },
+                    accessToken = accessToken
                 )
             }
         }
@@ -211,17 +214,18 @@ fun MenuOrderScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     drawerState: BottomDrawerState,
     menuItemList: List<MenuItem>,
-    customerName: String,
-    onCancelOrder: () -> Unit
+    customerName : String,
+    onCancelOrder: () -> Unit,
+    accessToken : String
 ) {
 
 
     val listOfCartNewOrder by remember { mainViewModel.listOfCartNewOrder }
     val status by remember { mainViewModel.newOrderStatus }
-    val accessToken by remember { mainViewModel.accessToken }
+//    val accessToken by remember { mainViewModel.accessToken }
     val coroutineScope = rememberCoroutineScope()
 
-
+    Log.d("orderscreen", accessToken)
 
     Row(
         modifier = Modifier
@@ -411,12 +415,14 @@ fun MenuOrderScreen(
                         Button(enabled = listOfCartNewOrder.isNotEmpty(),onClick = {
                             coroutineScope.launch {
                                 if (listOfCartNewOrder.isNotEmpty()) {
+                                    Log.d("orderscreen", accessToken)
 
                                     mainViewModel.newOrder(
                                         singleOrderRequest = SingleOrderRequest(
                                             carts = requestListCart(singleListOfCarts = listOfCartNewOrder),
                                             customerName = customerName,
-                                        )
+                                        ),
+                                        accessToken = accessToken
 
                                     )
 

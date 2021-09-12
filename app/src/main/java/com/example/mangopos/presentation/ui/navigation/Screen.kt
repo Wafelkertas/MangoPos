@@ -13,9 +13,14 @@ sealed class Screen(
     object Setting:Screen(route = "Setting", screenString = R.string.Setting)
     object Transaction:Screen(route = "Transaction", screenString = R.string.Transaction)
     object Login:Screen(route = "Login", screenString = R.string.Login)
-    object MainScreen:Screen(route = "MainScreen", screenString = R.string.MainScreen)
+    object Register:Screen(route = "Register", screenString = R.string.Register)
+    object CheckOutScreen:Screen(route = "CheckOutScreen", screenString = R.string.CheckOutScreen)
     object EditMenu:Screen(route = "EditMenu", screenString = R.string.EditMenu)
     object CreateMenu:Screen(route = "CreateMenu", screenString = R.string.CreateMenu)
     object OrderMenu:Screen(route = "OrderMenu", screenString = R.string.OrderMenu)
     object Order:Screen(route = "Order", screenString = R.string.Order)
+    object NewOrder:Screen(route = "NewOrder", screenString = R.string.NewOrder)
+    object EditOrder:Screen(route = "EditOrder", screenString = R.string.EditOrder)
+    object DetailOrder:Screen(route = "DetailOrder", screenString = R.string.DetailOrder)
+
 }

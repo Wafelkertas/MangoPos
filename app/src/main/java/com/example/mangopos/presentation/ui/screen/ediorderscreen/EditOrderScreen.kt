@@ -23,11 +23,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.Cart
 import com.example.mangopos.data.objects.dto.MenuItem
 import com.example.mangopos.data.objects.dto.SingleOrderRequest
 import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.component.MenuGrid
+import com.example.mangopos.presentation.ui.navigation.Screen
 import com.example.mangopos.presentation.ui.theme.cff6c2
 import com.example.mangopos.utils.addItemToList
 import com.example.mangopos.utils.deleteItemFromList
@@ -42,7 +44,8 @@ import kotlinx.coroutines.launch
 fun EditOrderScreen(
     mainViewModel: MainViewModel,
     drawerState: BottomDrawerState,
-    menuItemList: List<MenuItem>
+    menuItemList: List<MenuItem>,
+    navController: NavController
 ) {
 
 
@@ -53,13 +56,20 @@ fun EditOrderScreen(
     val updateOrderStatus by remember { mainViewModel.updateOrderStatus }
     val accessToken by remember { mainViewModel.accessToken }
 
-    var loading by remember { mutableStateOf(true) }
+    var loading by remember { mutableStateOf<Boolean?>(null) }
 
 
     Log.d("singleListOfCarts", singleListOfCarts.toString())
 
 
     val uuid = mainViewModel.orderUUID
+
+    if (updateOrderStatus == true) {
+        LaunchedEffect(key1 = true) {
+            navController.navigate(Screen.Transaction.route)
+
+        }
+    }
 
 
     val coroutineScope = rememberCoroutineScope()
@@ -182,41 +192,28 @@ fun EditOrderScreen(
                             .fillMaxWidth(0.9f)
                             .fillMaxHeight(0.85f)
                     ) {
-                        if (singleListOfCarts.isEmpty()) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(0.5f),
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                if (loading) {
-                                    CircularProgressIndicator(modifier = Modifier.size(50.dp))
-                                }
+                        Box(
+                            modifier = Modifier.fillMaxSize(0.5f),
+                            contentAlignment = Alignment.Center
+                        ) {
 
 
-                                Surface(
-                                    elevation = 5.dp,
-                                    color = Color.White,
-                                    shape = RoundedCornerShape(5.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .fillMaxHeight(0.5f)
+                            if (singleListOfCarts.isEmpty()) {
+
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(text = "Cart is Empty")
-                                    }
-
-
+                                    loading = false
+                                    Text(text = "Cart is Empty")
                                 }
-
                             }
+
+
                         }
 
 
                         if (singleListOfCarts.isNotEmpty()) {
-
                             loading = false
                             LazyColumn(
                                 modifier = Modifier
@@ -292,9 +289,10 @@ fun EditOrderScreen(
                         Button(onClick = {
                             coroutineScope.launch { drawerState.close() }
                         }) {
+
                             Text(text = "Cancel")
                         }
-                        Button(onClick = {
+                        Button(enabled = singleListOfCarts.isNotEmpty(), onClick = {
                             coroutineScope.launch {
                                 if (singleOrderResponse != null) {
                                     mainViewModel.editAnOrder(
@@ -313,6 +311,14 @@ fun EditOrderScreen(
                             }
                         }) {
                             Text(text = "Submit Order")
+                        }
+                        Button(onClick = {
+                            coroutineScope.launch {
+                                drawerState.close()
+                                navController.navigate(Screen.CheckOutScreen.route)
+                            }
+                        }) {
+                            Text(text = "Checkout Order")
                         }
                     }
 

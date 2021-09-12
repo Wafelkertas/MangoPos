@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
@@ -30,9 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.mangopos.MainActivity
 import com.example.mangopos.data.objects.dto.MenuItem
 import com.example.mangopos.presentation.MainViewModel
+import com.example.mangopos.presentation.ui.navigation.Screen
 import com.example.mangopos.utils.URIPathHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionRequired
@@ -44,7 +47,8 @@ import io.ktor.util.*
 @ExperimentalPermissionsApi
 @Composable
 fun CreateMenuScreen(
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    navController: NavController
 ) {
 
 
@@ -56,8 +60,11 @@ fun CreateMenuScreen(
     var menuPrice by remember { mutableStateOf("") }
     var menuDescription by remember { mutableStateOf("") }
     val accessToken by remember { mainViewModel.accessToken }
+    val createMenuStatus by remember { mainViewModel.createMenuStatus }
 
-
+    if (createMenuStatus == true) {
+        navController.navigate(Screen.Setting.route)
+    }
 
 
 
@@ -202,8 +209,14 @@ fun CreateMenuScreen(
                             PermissionRequired(
                                 permissionState = permission,
                                 permissionNotGrantedContent = {
-                                    Column {
-                                        Text(text = "Grant The Permission")
+                                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "Grant The Permission")
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(5.dp),
+                                        horizontalArrangement = Arrangement.SpaceAround
+                                    ) {
                                         Button(onClick = { permission.launchPermissionRequest() }) {
                                             Text(text = "Ok!")
                                         }
@@ -211,6 +224,7 @@ fun CreateMenuScreen(
                                             Text(text = "Nope")
                                         }
                                     }
+                                }
                                 },
                                 permissionNotAvailableContent = {
                                     Text("Permission denied")
@@ -231,6 +245,7 @@ fun CreateMenuScreen(
                             }
 
 
+
                             val launcher = rememberLauncherForActivityResult(
                                 contract =
                                 ActivityResultContracts.GetContent()
@@ -238,53 +253,71 @@ fun CreateMenuScreen(
                                 imageUri = uri
                             }
 
-                            Button(onClick = {
-                                launcher.launch("image/*")
-                            }) {
-                                Text(text = "Pick image")
-                            }
 
-
-                            imageUri?.let {
-                                if (Build.VERSION.SDK_INT < 28) {
-                                    bitmap.value = MediaStore.Images
-                                        .Media.getBitmap(context.contentResolver, it)
-
-                                } else {
-                                    val source = ImageDecoder
-                                        .createSource(context.contentResolver, it)
-                                    bitmap.value = ImageDecoder.decodeBitmap(source)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(0.8f)
+                                    ,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if(imageUri == null){
+                                    Text(text = "No Picture")
                                 }
 
-                                bitmap.value?.let { btm ->
-                                    Image(
-                                        bitmap = btm.asImageBitmap(),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(400.dp)
+                                imageUri?.let {
+                                    if (Build.VERSION.SDK_INT < 28) {
+                                        bitmap.value = MediaStore.Images
+                                            .Media.getBitmap(context.contentResolver, it)
+
+                                    } else {
+                                        val source = ImageDecoder
+                                            .createSource(context.contentResolver, it)
+                                        bitmap.value = ImageDecoder.decodeBitmap(source)
+                                    }
+
+                                    bitmap.value?.let { btm ->
+                                        Image(
+                                            bitmap = btm.asImageBitmap(),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(400.dp)
+                                        )
+                                    }
+
+                                }
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+
+                                Button(onClick = {
+                                    launcher.launch("image/*")
+                                }) {
+                                    Text(text = "Pick image")
+                                }
+
+                                Button(onClick = {
+                                    mainViewModel.createMenu(
+                                        accessToken = accessToken,
+                                        menuItem = MenuItem(
+                                            categoryUuid = menuCategoryUuid,
+                                            createdAt = "",
+                                            description = menuDescription,
+                                            id = 0,
+                                            image = "",
+                                            name = menuName,
+                                            price = menuPrice,
+                                            updatedAt = "",
+                                            uuid = ""
+                                        ),
+                                        uri = realPath
                                     )
+
+                                }) {
+                                    Text(text = "Create New Menu")
                                 }
-
-                            }
-
-                            Button(onClick = {
-                                mainViewModel.createMenu(
-                                    accessToken = accessToken,
-                                    menuItem = MenuItem(
-                                        categoryUuid = menuCategoryUuid,
-                                        createdAt = "",
-                                        description = menuDescription,
-                                        id = 0,
-                                        image = "",
-                                        name = menuName,
-                                        price = menuPrice,
-                                        updatedAt = "",
-                                        uuid = ""
-                                    ),
-                                    uri = realPath
-                                )
-
-                            }) {
-                                Text(text = "Create New Menu")
                             }
 
                         }

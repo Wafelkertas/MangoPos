@@ -1,9 +1,10 @@
 package com.example.mangopos
 
-import com.example.mangopos.presentation.ui.navigation.Navigation
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -12,10 +13,16 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.example.mangopos.presentation.ui.navigation.Navigation
 import com.example.mangopos.presentation.ui.theme.MangoPosTheme
+import com.example.mangopos.utils.generatePdf2
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.tejpratapsingh.pdfcreator.utils.PDFUtil
+import com.tejpratapsingh.pdfcreator.utils.PDFUtil.PDFUtilListener
 import dagger.hilt.android.AndroidEntryPoint
 import io.ktor.util.*
+import java.io.File
+import java.lang.Exception
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(
@@ -30,6 +37,8 @@ class MainActivity : ComponentActivity(
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         // Force Android to open at Landscape Orientation
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE

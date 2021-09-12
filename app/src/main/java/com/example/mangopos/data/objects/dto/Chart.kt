@@ -4,7 +4,11 @@ package com.example.mangopos.data.objects.dto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-class Chart : ArrayList<ChartItem>()
+@Serializable
+data class Chart(
+    @SerialName("data")
+     val listChartData: List<ChartItem>
+)
 
 @Serializable
 data class ChartItem(
@@ -15,3 +19,4 @@ data class ChartItem(
     @SerialName("year")
     val year: String
 )
+

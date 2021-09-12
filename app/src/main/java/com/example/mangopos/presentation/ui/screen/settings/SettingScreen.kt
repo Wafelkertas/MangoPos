@@ -9,15 +9,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mangopos.presentation.MainViewModel
-import com.example.mangopos.presentation.component.MenuGrid
 import com.example.mangopos.presentation.ui.theme.FCEE86
 import kotlinx.coroutines.launch
 import com.example.mangopos.data.objects.dto.MenuItem
 import com.example.mangopos.presentation.component.EditMenuGrid
 import com.example.mangopos.presentation.ui.navigation.Screen
+import com.example.mangopos.data.objects.model.PDFObject
 
 
 @ExperimentalFoundationApi
@@ -28,6 +29,7 @@ fun SettingScreen(
     menuItem: List<MenuItem>
 ) {
 
+    mainViewModel.updateMenuStatus.value = null
     val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
@@ -62,6 +64,9 @@ fun SettingScreen(
                     .padding(5.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
+                val context = LocalContext.current
+
+
 
                 Button(onClick = {
                     navController.navigate("Login")
@@ -69,6 +74,7 @@ fun SettingScreen(
                 }) {
                     Text(text = "Sign Out")
                 }
+
                 Button(onClick = {
                     navController.navigate(Screen.CreateMenu.route)
 
@@ -80,6 +86,22 @@ fun SettingScreen(
 
                 }) {
                     Text(text = "Discount")
+                }
+                Button(onClick = {
+                    mainViewModel.createPdf(application = context, PDFObject(
+                        customerName = "Kocak",
+                        sumTotal = "Kocak",
+                        discount = "Kocak",
+                        noInvoice = "Kocak",
+                        date = "Kocak",
+                        uuid = "Kocak",
+                        listOfCarts = listOf(),
+                        change = "kocak",
+                        customerCash = "kocak"
+                    ))
+
+                }) {
+                    Text(text = "Test PDF")
                 }
             }
         }

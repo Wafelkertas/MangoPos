@@ -24,6 +24,8 @@ import com.example.mangopos.data.objects.dto.OrderItem
 import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.ui.theme.ffdd49
 import com.example.mangopos.presentation.ui.theme.fff6c2
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
@@ -32,7 +34,8 @@ fun ListComponentTransaction(
     navController: NavController,
     data: List<OrderItem?>,
     mainViewModel: MainViewModel,
-    drawerState: BottomDrawerState
+    drawerState: BottomDrawerState,
+    accessToken: String
 ) {
 
     LazyColumn(
