@@ -3,6 +3,7 @@ package com.example.mangopos.presentation.component
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
@@ -33,7 +34,7 @@ fun TabRow(
         selectedTabIndex = tabIndex,
         modifier = Modifier
             .fillMaxWidth()
-            .requiredHeight(40.dp)
+            .fillMaxHeight(0.05f)
             .padding(0.dp)
             .shadow(10.dp)
 

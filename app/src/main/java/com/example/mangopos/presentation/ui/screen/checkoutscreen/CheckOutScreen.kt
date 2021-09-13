@@ -263,7 +263,7 @@ fun CheckOutScreen(
                             ) {
                                 Text(text = "Rp  ")
                                 OutlinedTextField(value = customerCash, onValueChange = {
-                                    customerCash = it
+                                    if(customerCash.length < 7) customerCash = it
                                 }, label = { Text(text = "Input Cash") },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                             }
