@@ -73,7 +73,7 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = { if (it.length < 10) email = it },
                         modifier = Modifier.padding(top = 5.dp, bottom = 5.dp),
                         label = {
                             Text(
@@ -82,7 +82,7 @@ fun RegisterScreen(
                         })
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = { if (it.length < 10) password = it },
                         modifier = Modifier.padding(top = 5.dp, bottom = 5.dp),
                         label = {
                             Text(

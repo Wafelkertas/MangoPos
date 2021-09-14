@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -63,8 +64,10 @@ fun CreateMenuScreen(
     val createMenuStatus by remember { mainViewModel.createMenuStatus }
 
     if (createMenuStatus == true) {
+        mainViewModel.getMenuList(accessToken = accessToken)
         navController.navigate(Screen.Setting.route)
     }
+
 
 
 
@@ -102,81 +105,84 @@ fun CreateMenuScreen(
                     ) {
 
 
-                        Column(
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(10.dp),
                             horizontalAlignment = Alignment.Start
                         ) {
+                            item {
+
+                                Text(
+                                    text = "Create new Menu  ",
+                                    modifier = Modifier.padding(bottom = 10.dp)
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Nama Makanan") },
+                                    value = menuName,
+                                    onValueChange = { menuName = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 1
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Harga Makanan") },
+                                    value = menuPrice,
+                                    onValueChange = { menuPrice = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 1
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Deksripsi Makanan") },
+                                    value = menuDescription,
+                                    onValueChange = { menuDescription = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 2
+                                )
 
 
-                            Text(
-                                text = "Create new Menu  ",
-                                modifier = Modifier.padding(bottom = 10.dp)
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Nama Makanan") },
-                                value = menuName,
-                                onValueChange = { menuName = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 1
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Harga Makanan") },
-                                value = menuPrice,
-                                onValueChange = { menuPrice = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 1
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Deksripsi Makanan") },
-                                value = menuDescription,
-                                onValueChange = { menuDescription = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 2
-                            )
+                                OutlinedTextField(
+                                    enabled = false,
+                                    readOnly = true,
+                                    label = { Text(text = "Kategori Makanan") },
+                                    value = menuCategory,
+                                    onValueChange = { },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .focusable(enabled = true)
+                                        .clickable {
+                                            dropDownMenu = true
+                                        }
+                                        .fillMaxWidth()
 
+                                )
 
-                            OutlinedTextField(
-                                enabled = false,
-                                readOnly = true,
-                                label = { Text(text = "Kategori Makanan") },
-                                value = menuCategory,
-                                onValueChange = { },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .focusable(enabled = true)
-                                    .clickable {
-                                        dropDownMenu = true
+                                DropdownMenu(offset = DpOffset(y = (-30).dp, x = 0.dp),
+                                    expanded = dropDownMenu,
+                                    onDismissRequest = { dropDownMenu = false }) {
+
+                                    category.forEach { category ->
+
+                                        DropdownMenuItem(onClick = {
+                                            menuCategory = category!!.name
+                                            menuCategoryUuid = category!!.uuid
+                                            dropDownMenu = false
+                                        }) {
+                                            Text(
+                                                text = category!!.name,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
-                                    .fillMaxWidth()
 
-                            )
 
-                            DropdownMenu(offset = DpOffset(y = (-30).dp, x = 0.dp),
-                                expanded = dropDownMenu,
-                                onDismissRequest = { dropDownMenu = false }) {
-
-                                category.forEach { category ->
-
-                                    DropdownMenuItem(onClick = {
-                                        menuCategory = category!!.name
-                                        menuCategoryUuid = category!!.uuid
-                                        dropDownMenu = false
-                                    }) {
-                                        Text(text = category!!.name, textAlign = TextAlign.Center)
-                                    }
                                 }
-
-
                             }
-
                         }
 
 
@@ -209,22 +215,25 @@ fun CreateMenuScreen(
                             PermissionRequired(
                                 permissionState = permission,
                                 permissionNotGrantedContent = {
-                                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(text = "Grant The Permission")
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(5.dp),
-                                        horizontalArrangement = Arrangement.SpaceAround
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Button(onClick = { permission.launchPermissionRequest() }) {
-                                            Text(text = "Ok!")
-                                        }
-                                        Button(onClick = { doNotShowRationale = true }) {
-                                            Text(text = "Nope")
+                                        Text(text = "Grant The Permission")
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(5.dp),
+                                            horizontalArrangement = Arrangement.SpaceAround
+                                        ) {
+                                            Button(onClick = { permission.launchPermissionRequest() }) {
+                                                Text(text = "Ok!")
+                                            }
+                                            Button(onClick = { doNotShowRationale = true }) {
+                                                Text(text = "Nope")
+                                            }
                                         }
                                     }
-                                }
                                 },
                                 permissionNotAvailableContent = {
                                     Text("Permission denied")
@@ -245,7 +254,6 @@ fun CreateMenuScreen(
                             }
 
 
-
                             val launcher = rememberLauncherForActivityResult(
                                 contract =
                                 ActivityResultContracts.GetContent()
@@ -256,11 +264,10 @@ fun CreateMenuScreen(
 
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize(0.8f)
-                                    ,
+                                    .fillMaxSize(0.8f),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if(imageUri == null){
+                                if (imageUri == null) {
                                     Text(text = "No Picture")
                                 }
 

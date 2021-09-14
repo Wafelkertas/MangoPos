@@ -22,25 +22,7 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlinx.coroutines.launch
-
-
-//val entry = listOf(
-//    BarEntry(1f, 1f),
-//    BarEntry(2f, 5f),
-//    BarEntry(3f, 10f),
-//    BarEntry(4f, 1f),
-//    BarEntry(5f, 5f),
-//    BarEntry(6f, 10f),
-//    BarEntry(7f, 1f),
-//    BarEntry(8f, 5000f),
-//    BarEntry(9f, 10f),
-//    BarEntry(10f, 1f),
-//    BarEntry(11f, 5f),
-//    BarEntry(12f, 100f)
-//)
-//val dataset = BarDataSet(entry, "Penjualan")
-//
-//val barData = BarData(dataset)
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -158,7 +140,7 @@ fun sortMonths(month: String): Float {
 
 class RupiahValueFormatter : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
-        return "Rp.${value.toInt()}000"
+        return "Rp.${value.roundToInt()}000"
     }
 }
 

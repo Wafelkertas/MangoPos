@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.Cart
 import com.example.mangopos.data.objects.dto.PayRequest
@@ -22,6 +23,15 @@ import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.ui.navigation.Screen
 import com.example.mangopos.presentation.ui.theme.ffdd49
 import kotlinx.coroutines.launch
+
+fun isNumber(s: String): Boolean {
+    return try {
+        s.toInt()
+        true
+    } catch (ex: NumberFormatException) {
+        false
+    }
+}
 
 @ExperimentalMaterialApi
 @Composable
@@ -38,16 +48,25 @@ fun CheckOutScreen(
     var totalPrice by remember { mutableStateOf(0) }
     var totalItems by remember { mutableStateOf(0) }
     var customerCash by remember { mutableStateOf("") }
+    var customerCashInt by remember { mutableStateOf(0) }
     var discountString by remember { mutableStateOf("10") }
     var sumTotalPrice by remember { mutableStateOf(0) }
     var ppn by remember { mutableStateOf(0) }
     var change by remember { mutableStateOf(0) }
     var discountAmount by remember { mutableStateOf(0) }
 
-    if (networkPayOrderError == true){
+    if (networkPayOrderError == true) {
         navController.navigate(Screen.Transaction.route)
         mainViewModel.getAllCategory(accessToken = accessToken)
     }
+    if (customerCash.isNotEmpty()) {
+        if (isNumber(customerCash)) {
+            customerCashInt = customerCash.toInt()
+
+        }
+    }
+
+
 
 
 
@@ -76,19 +95,19 @@ fun CheckOutScreen(
     ) {
 
 
-            change = calculateChange(sumTotal = sumTotalPrice, cash = customerCash)
+        change = calculateChange(sumTotal = sumTotalPrice, cash = customerCash)
 
-            sumTotalPrice =
-                calculateSumTotal(
-                    totalPrice = totalPrice,
-                    ppn = ppn,
-                    discount = discountString
-                )
-            discountAmount = calculateDiscount(
+        sumTotalPrice =
+            calculateSumTotal(
                 totalPrice = totalPrice,
                 ppn = ppn,
-                discount = discountString.toInt()
+                discount = discountString
             )
+        discountAmount = calculateDiscount(
+            totalPrice = totalPrice,
+            ppn = ppn,
+            discount = discountString.toInt()
+        )
 
 
 
@@ -263,9 +282,10 @@ fun CheckOutScreen(
                             ) {
                                 Text(text = "Rp  ")
                                 OutlinedTextField(value = customerCash, onValueChange = {
-                                    if(customerCash.length < 7) customerCash = it
+                                    if (customerCash.length < 7) customerCash = it
                                 }, label = { Text(text = "Input Cash") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                )
                             }
 
                             Row(
@@ -277,7 +297,7 @@ fun CheckOutScreen(
                                 OutlinedTextField(
                                     value = discountString,
                                     onValueChange = {
-                                        discountString = it
+                                        if (it.length < 2) discountString = it
 
                                     },
                                     label = { Text(text = "Input discount") },
@@ -323,18 +343,21 @@ fun CheckOutScreen(
                                 }) {
                                     Text(text = "Cancel")
                                 }
-                                Button(onClick = {
-                                    mainViewModel.payOrder(accessToken = accessToken, payRequest = PayRequest(
-                                        cash = customerCash.toInt(),
-                                        moneyChange = change.toInt(),
-                                        name = singleOrderResponse!!.customerName,
-                                        quantity = totalItems,
-                                        totalPrice = totalPrice,
-                                        total = sumTotalPrice
-                                    ),
-                                        uuid = singleOrderResponse!!.uuid
-                                    )
-                                }) {
+                                Button(
+                                    enabled = customerCashInt >= sumTotalPrice ,
+                                    onClick = {
+                                        mainViewModel.payOrder(
+                                            accessToken = accessToken, payRequest = PayRequest(
+                                                cash = customerCash.toInt(),
+                                                moneyChange = change.toInt(),
+                                                name = singleOrderResponse!!.customerName,
+                                                quantity = totalItems,
+                                                totalPrice = totalPrice,
+                                                total = sumTotalPrice
+                                            ),
+                                            uuid = singleOrderResponse!!.uuid
+                                        )
+                                    }) {
                                     Text(text = "Pay Now")
                                 }
                             }
@@ -357,7 +380,7 @@ fun calculateDiscount(totalPrice: Int, ppn: Int, discount: Int): Int {
 
 fun calculateSumTotal(totalPrice: Int, discount: String, ppn: Int): Int {
     var intDiscount = 0
-    if (discount.isNotEmpty()){
+    if (discount.isNotEmpty()) {
         intDiscount = discount.toInt()
     }
     return totalPrice + ppn - ((totalPrice + ppn) * intDiscount / 100)

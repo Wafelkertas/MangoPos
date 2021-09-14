@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.Cart
 import com.example.mangopos.data.objects.dto.MenuItem
@@ -67,6 +68,7 @@ fun EditOrderScreen(
     if (updateOrderStatus == true) {
         LaunchedEffect(key1 = true) {
             navController.navigate(Screen.Transaction.route)
+            mainViewModel.getAllOrder(accessToken = accessToken)
 
         }
     }
@@ -133,7 +135,7 @@ fun EditOrderScreen(
                             textAlign = TextAlign.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 4.dp, top = 10.dp)
+                                .padding(5.dp)
                         )
 
                     }
@@ -155,12 +157,18 @@ fun EditOrderScreen(
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
                     Text(text = "Cart")
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(30.dp),
+                            .fillMaxHeight(0.15f),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -190,7 +198,7 @@ fun EditOrderScreen(
                     Surface(
                         color = Color.White, shape = RoundedCornerShape(5.dp), modifier = Modifier
                             .fillMaxWidth(0.9f)
-                            .fillMaxHeight(0.85f)
+                            .fillMaxHeight(0.80f)
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(0.5f),
@@ -279,20 +287,22 @@ fun EditOrderScreen(
 
 
                     }
-                    Spacer(modifier = Modifier.height(15.dp))
+
                     Row(
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(2.dp)
                             .fillMaxHeight()
-                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(onClick = {
+                        Button(modifier = Modifier.padding(start = 1.dp),onClick = {
                             coroutineScope.launch { drawerState.close() }
                         }) {
 
                             Text(text = "Cancel")
                         }
-                        Button(enabled = singleListOfCarts.isNotEmpty(), onClick = {
+                        Button(modifier = Modifier.padding(start = 2.dp, end = 2.dp),enabled = singleListOfCarts.isNotEmpty(), onClick = {
                             coroutineScope.launch {
                                 if (singleOrderResponse != null) {
                                     mainViewModel.editAnOrder(
@@ -312,13 +322,13 @@ fun EditOrderScreen(
                         }) {
                             Text(text = "Submit Order")
                         }
-                        Button(onClick = {
+                        Button(modifier = Modifier.padding( end = 1.dp),onClick = {
                             coroutineScope.launch {
                                 drawerState.close()
                                 navController.navigate(Screen.CheckOutScreen.route)
                             }
                         }) {
-                            Text(text = "Checkout Order")
+                            Text(text = "Checkout ")
                         }
                     }
 

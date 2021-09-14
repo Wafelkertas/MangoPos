@@ -45,6 +45,7 @@ fun TransactionScreen(
     val accessToken by remember { mainViewModel.accessToken }
     val networkErrorMessage by remember { mainViewModel.networkOrderErrorMessage }
 
+
     val endReached by remember { mainViewModel.endReached }
     val error by remember { mainViewModel.networkErrorOrder }
 
@@ -70,6 +71,8 @@ fun TransactionScreen(
         mainViewModel.networkPayOrderError.value = null
         mainViewModel.getAllCategory(accessToken = accessToken)
         mainViewModel.getMenuList(accessToken = accessToken)
+        mainViewModel.newOrderStatus.value = null
+        mainViewModel.listOfCartNewOrder.value = listOf()
 
     }
 
@@ -116,10 +119,6 @@ fun TransactionScreen(
                 if (scaffoldState.snackbarHostState.currentSnackbarData?.message == "Login Success") {
                     scaffoldState.snackbarHostState.currentSnackbarData!!.dismiss()
                 }
-
-
-
-
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TransactionHeaderList()

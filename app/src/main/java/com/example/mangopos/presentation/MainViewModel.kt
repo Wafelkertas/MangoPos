@@ -124,8 +124,7 @@ class MainViewModel @Inject constructor(
 
             testingWithDelay()
 
-//            loadSharePrefToState()
-//            invoicesRepository.getChartData("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiN2ZmMDJiYjg3M2I5MDg0ZGNiNmRiNmE4N2UzYWEwOWIwOGJjYTdiYzI1YzY2NmJmMWEyMWIxMmEwZmYyNjE4NjQxZjIzYWJkYWRjMDIyMzAiLCJpYXQiOjE2Mjk4NjgwNTUuNzY5NzA4LCJuYmYiOjE2Mjk4NjgwNTUuNzY5NzEsImV4cCI6MTY2MTQwNDA1NS43Njc2NCwic3ViIjoiMSIsInNjb3BlcyI6W119.CqCLuSXI_J1YsdJY6_e-7xmDFYaUa2eUt8jKNM6i6xKgDslxS0qzMoBde1300zpalWPGrAl6FUtYcmU47DnJZV3Q5uut5YEFoKklamD3zcDRoPkZrfHpYoj7Uvutjj1FKE_kduESm4Hdnqog_S1qCSFkL1rPJExsRpuYJAHsnbNJwqvtrol5TZKFKfDiWXpw8mJk9E7Fo5-b8IxXouVKX_gUS1i6wypZZcOURLuOImB_NcI5HdMF0cE9wmhZjDuNF2l-KWvVZhSp0_i_RusOBYA8joHNL9wy9eApmbWqvc1k4N5_soCvdZiWYQ_g-h3SaBmlbzlGXVJGva1HGi5T7rNFwOGteWFirYAYG_YwW60JBdYEWJfZ9uWry3PYpV6eB6G2STZvOAh2htU3XcS-HP5x7dyvCVUWrB5IECjBAaohMrN4L0eWxIE7ogIbHbCtA21SkHapsrysdVV9haKYiijzzg5x6e9p14DOpjIXyO206oXlXpFnyh3z740Xl8FPHkl5bQn7wvl5duVxWDnEC9VTX-0-Tc8QHgUEzAVe3SVo0h3RlrxeBYLDwMjcbIz1A36pR2D33R7jPyHDB-nGMK2j2clDW8jdNTilc09X0P8con2afRevU2UNv1P7oMgDbX-eFV2DrXwamZYl3XZIa--RQRUff8QDOFHzJBgAYu4")
+
 
 
         }
@@ -183,12 +182,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun filterMenuToBeEdited(uuid: String) {
-        val menuEdit = listOfMenu.value.filter { menuItem ->
+        val menuEdit = listOfMenu.value.first { menuItem ->
             menuItem.uuid == uuid
         }
-        val newData = menuEdit.firstOrNull()
 
-        editMenu.value = newData
+        editMenu.value = menuEdit
     }
 
 
@@ -277,8 +275,10 @@ class MainViewModel @Inject constructor(
 
             when (response) {
                 is Resource.Success -> {
-                    if (response.data!!.invoicesItem.isEmpty()){
+                    endReached.value = response.data!!.lastPage <= response.data.page.toInt()
+                    if (response.data.invoicesItem.isEmpty()){
                         listOfInvoices.value = listOfInvoices.value
+                        endReached.value = true
                     }
                     if (response.data.invoicesItem.isNotEmpty()){
                         listOfInvoices.value = newAddedToList(list = response.data.invoicesItem,oldItem = listOfInvoices.value)

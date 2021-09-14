@@ -181,7 +181,7 @@ fun DetailInvoicesScreen(
                         ) {
 
                             Text(text = "Total Disc")
-                            Text(text = (detailInvoices!!.totalPriceAfterDiscount.toInt() - detailInvoices!!.totalPrice.toInt()).toString())
+                            Text(text = (detailInvoices!!.totalPrice.toInt()-detailInvoices!!.totalPriceAfterDiscount.toInt()).toString())
                         }
                         Row(
                             modifier = Modifier
@@ -235,7 +235,7 @@ fun DetailInvoicesScreen(
                                         pdfObject = PDFObject(
                                             customerName = detailInvoices!!.name,
                                             sumTotal = detailInvoices!!.totalPriceAfterDiscount,
-                                            discount = (detailInvoices!!.totalPriceAfterDiscount.toInt()-detailInvoices!!.totalPrice.toInt()).toString(),
+                                            discount = (detailInvoices!!.totalPrice.toInt()-detailInvoices!!.totalPriceAfterDiscount.toInt()).toString(),
                                             noInvoice = detailInvoices!!.noInvoice,
                                             date = "",
                                             uuid = detailInvoices!!.uuid,
