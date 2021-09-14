@@ -90,7 +90,7 @@ fun OrderScreen(
                     drawerState = drawerState,
                     navController = navHost,
                     customerName = customerName,
-                    onValueChange = { customerName = it },
+                    onValueChange = { if (it.length < 10) customerName = it },
                     onCancelOrder = { customerName = "" }
                 )
             }
@@ -120,7 +120,8 @@ fun OrderScreen(
                     customerName = customerName,
                     navController = navHost,
                     onCancelOrder = { customerName = "" },
-                    accessToken = accessToken
+                    accessToken = accessToken,
+                    mainViewModel = mainViewModel
                 )
             }
         }
@@ -211,7 +212,7 @@ fun NewOrder(
 @Composable
 fun MenuOrderScreen(
     navController: NavController,
-    mainViewModel: MainViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel ,
     drawerState: BottomDrawerState,
     menuItemList: List<MenuItem>,
     customerName : String,
@@ -225,19 +226,23 @@ fun MenuOrderScreen(
 //    val accessToken by remember { mainViewModel.accessToken }
     val coroutineScope = rememberCoroutineScope()
 
-    Log.d("orderscreen", accessToken)
+
+        if (status == true) {
+            LaunchedEffect(key1 = true ) {
+                drawerState.close()
+                navController.popBackStack()
+                mainViewModel.getAllOrder(accessToken = accessToken)
+                mainViewModel.newOrderStatus.value = null
+                mainViewModel.listOfCartNewOrder.value = listOf()
+                onCancelOrder.invoke()
+            }
+        }
 
     Row(
         modifier = Modifier
             .fillMaxSize()
             .padding(5.dp)
     ) {
-        if (status == true) {
-            coroutineScope.launch {
-
-                drawerState.close()
-            }
-        }
 
         Box(
             contentAlignment = Alignment.Center, modifier = Modifier
@@ -285,7 +290,7 @@ fun MenuOrderScreen(
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 4.dp, top = 10.dp)
+                            .padding(5.dp)
                     )
 
                 }
@@ -307,12 +312,17 @@ fun MenuOrderScreen(
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
                     Text(text = "Cart")
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(30.dp),
+                            .fillMaxHeight(0.15f),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -342,7 +352,7 @@ fun MenuOrderScreen(
                     Surface(
                         color = Color.White, shape = RoundedCornerShape(5.dp), modifier = Modifier
                             .fillMaxWidth(0.9f)
-                            .fillMaxHeight(0.85f)
+                            .fillMaxHeight(0.8f)
                     ) {
 
                         LazyColumn(
@@ -397,12 +407,13 @@ fun MenuOrderScreen(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(15.dp))
                     Row(
                         modifier = Modifier
                             .padding(5.dp)
                             .fillMaxHeight()
-                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(onClick = {
                             onCancelOrder.invoke()
@@ -413,6 +424,7 @@ fun MenuOrderScreen(
                             Text(text = "Cancel")
                         }
                         Button(enabled = listOfCartNewOrder.isNotEmpty(),onClick = {
+
                             coroutineScope.launch {
                                 if (listOfCartNewOrder.isNotEmpty()) {
                                     Log.d("orderscreen", accessToken)

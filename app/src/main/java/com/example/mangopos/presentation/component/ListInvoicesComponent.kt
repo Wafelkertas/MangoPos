@@ -30,6 +30,8 @@ import com.example.mangopos.presentation.ui.navigation.Screen
 
 import com.example.mangopos.presentation.ui.theme.ffdd49
 import com.example.mangopos.presentation.ui.theme.fff6c2
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 /*
@@ -48,11 +50,14 @@ fun ListComponentInvoices(
     val accessToken by remember { mainViewModel.accessToken }
     val invoiceResponse by remember { mainViewModel.invoicesResponse }
     var currentPage by remember { mutableStateOf(2) }
+    val scope = rememberCoroutineScope()
 
-
-    var endReached = false
+    val endReached by remember {
+        mainViewModel.endReached
+    }
 
     Log.d("listInvoices", (state.firstVisibleItemIndex + 5).toString())
+    Log.d("endReached", endReached.toString())
 
     LazyColumn(
         state = state,
@@ -61,6 +66,7 @@ fun ListComponentInvoices(
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
+
         val lastIndex = data.lastIndex
         itemsIndexed(items = data) { index, data ->
             InvoicesItem(
@@ -72,18 +78,19 @@ fun ListComponentInvoices(
         }
 
         item {
-            if (state.firstVisibleItemIndex + 4 == lastIndex) {
-                Button(
-                    onClick = {
+
+            if (!endReached) {
+                if (state.firstVisibleItemIndex + 4 == lastIndex) {
+                    scope.launch {
+
+
                         mainViewModel.getAnotherInvoicesList(
                             accessToken = accessToken,
                             page = currentPage
                         )
                         currentPage++
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Load More")
+
+                    }
                 }
             }
         }
@@ -106,7 +113,11 @@ fun InvoicesItem(data: InvoicesItem, index: Int, navController: NavController) {
             .height(75.dp)
             .padding(5.dp)
             .clickable {
-                navController.navigate(Screen.DetailOrder.route + "/${data.noInvoice}")
+                navController.navigate(Screen.DetailOrder.route + "/${data.noInvoice}") {
+                    popUpTo(Screen.Invoices.route){
+
+                    }
+                }
             }
     ) {
 

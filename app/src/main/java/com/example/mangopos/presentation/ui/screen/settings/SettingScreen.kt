@@ -1,14 +1,21 @@
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -29,22 +36,31 @@ fun SettingScreen(
     menuItem: List<MenuItem>
 ) {
 
-    mainViewModel.updateMenuStatus.value = null
+    LaunchedEffect(key1 = true) {
+        mainViewModel.createMenuStatus.value = null
+        mainViewModel.updateMenuStatus.value = null
+        mainViewModel.editMenu.value = null
+    }
     val scope = rememberCoroutineScope()
+    val state = rememberScrollState()
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(FCEE86)
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(FCEE86),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(5.dp)
+                .padding(5.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Surface(
                 Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight(0.85f)
                     .padding(5.dp),
                 color = Color.White,
                 elevation = 5.dp,
@@ -60,45 +76,48 @@ fun SettingScreen(
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.5f)
+                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.Start
             ) {
                 val context = LocalContext.current
 
 
 
-                Button(onClick = {
+                Button(modifier = Modifier.padding(start = 5.dp, end = 5.dp), onClick = {
                     navController.navigate("Login")
                     scope.launch { mainViewModel.signOut() }
                 }) {
                     Text(text = "Sign Out")
                 }
 
-                Button(onClick = {
+                Button(modifier = Modifier.padding(start = 5.dp, end = 5.dp), onClick = {
                     navController.navigate(Screen.CreateMenu.route)
 
                 }) {
                     Text(text = "Add menu")
                 }
-                Button(onClick = {
-                    navController.navigate("Login")
+                Button(modifier = Modifier.padding(start = 5.dp, end = 5.dp), onClick = {
+
 
                 }) {
                     Text(text = "Discount")
                 }
-                Button(onClick = {
-                    mainViewModel.createPdf(application = context, PDFObject(
-                        customerName = "Kocak",
-                        sumTotal = "Kocak",
-                        discount = "Kocak",
-                        noInvoice = "Kocak",
-                        date = "Kocak",
-                        uuid = "Kocak",
-                        listOfCarts = listOf(),
-                        change = "kocak",
-                        customerCash = "kocak"
-                    ))
+                Button(modifier = Modifier.padding(start = 5.dp, end = 5.dp), onClick = {
+                    mainViewModel.createPdf(
+                        application = context, PDFObject(
+                            customerName = "Kocak",
+                            sumTotal = "Kocak",
+                            discount = "Kocak",
+                            noInvoice = "Kocak",
+                            date = "Kocak",
+                            uuid = "Kocak",
+                            listOfCarts = listOf(),
+                            change = "kocak",
+                            customerCash = "kocak"
+                        )
+                    )
 
                 }) {
                     Text(text = "Test PDF")

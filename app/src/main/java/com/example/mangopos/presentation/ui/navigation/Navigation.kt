@@ -138,7 +138,7 @@ fun Navigation(
                                 }
 
                                 if (currentDestination.route == "${Screen.EditMenu.route}/{uuid}") {
-                                    mainViewModel.editMenu.value = null
+
                                     navController.navigate(Screen.Setting.route)
                                 }
 

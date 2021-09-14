@@ -12,6 +12,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -59,6 +61,7 @@ fun EditMenuScreen(
     var dropDownMenu by remember { mutableStateOf(false) }
 
     if (updateMenuStatus == true) {
+        mainViewModel.getMenuList(accessToken = accessToken)
         navController.navigate(Screen.Setting.route)
     }
 
@@ -70,7 +73,7 @@ fun EditMenuScreen(
     }
 
 
-    if (category != null && menuItem != null) {
+    if (menuItem != null) {
 
         var menuName by remember { mutableStateOf(value = "${menuItem!!.name}") }
         var menuPrice by remember { mutableStateOf("${menuItem!!.price}") }
@@ -78,6 +81,7 @@ fun EditMenuScreen(
         var menuDescription by remember { mutableStateOf(value = "${menuItem!!.description}") }
         var menuImage by remember { mutableStateOf(menuItem!!.image) }
         var menuCategoryUuid by remember { mutableStateOf("${category[0]?.uuid}") }
+
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -103,76 +107,81 @@ fun EditMenuScreen(
                     ) {
 
 
-                        Column(
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(10.dp),
                             horizontalAlignment = Alignment.Start
                         ) {
-                            Text(
-                                text = "Edit Menu ${menuItem!!.name} ",
-                                modifier = Modifier.padding(bottom = 10.dp)
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Nama Makanan") },
-                                value = menuName,
-                                onValueChange = { menuName = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 1
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Harga Makanan") },
-                                value = menuPrice,
-                                onValueChange = { menuPrice = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 1
-                            )
-                            OutlinedTextField(
-                                label = { Text(text = "Deksripsi Makanan") },
-                                value = menuDescription,
-                                onValueChange = { menuDescription = it },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .fillMaxWidth(),
-                                maxLines = 2
-                            )
+                            item {
+                                Text(
+                                    text = "Edit Menu ${menuName} ",
+                                    modifier = Modifier.padding(bottom = 10.dp)
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Nama Makanan") },
+                                    value = menuName,
+                                    onValueChange = { if (it.length < 15) menuName = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 1
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Harga Makanan") },
+                                    value = menuPrice,
+                                    onValueChange = { if (it.length < 7) menuPrice = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 1
+                                )
+                                OutlinedTextField(
+                                    label = { Text(text = "Deksripsi Makanan") },
+                                    value = menuDescription,
+                                    onValueChange = { menuDescription = it },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .fillMaxWidth(),
+                                    maxLines = 2
+                                )
 
 
-                            OutlinedTextField(enabled = false,
-                                readOnly = true,
-                                label = { Text(text = "Kategori Makanan") },
-                                value = menuCategory,
-                                onValueChange = { },
-                                modifier = Modifier
-                                    .padding(top = 5.dp, bottom = 5.dp)
-                                    .focusable(enabled = true)
-                                    .clickable {
-                                        dropDownMenu = true
+                                OutlinedTextField(enabled = false,
+                                    readOnly = true,
+                                    label = { Text(text = "Kategori Makanan") },
+                                    value = menuCategory,
+                                    onValueChange = { },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, bottom = 5.dp)
+                                        .focusable(enabled = true)
+                                        .clickable {
+                                            dropDownMenu = true
+                                        }
+                                        .fillMaxWidth()
+
+                                )
+
+                                DropdownMenu(offset = DpOffset(y = (-30).dp, x = 0.dp),
+                                    expanded = dropDownMenu,
+                                    onDismissRequest = { dropDownMenu = false }) {
+
+                                    category.forEach { category ->
+
+                                        DropdownMenuItem(onClick = {
+                                            menuCategory = category!!.name
+                                            menuCategoryUuid = category!!.uuid
+                                            dropDownMenu = false
+                                        }) {
+                                            Text(
+                                                text = category!!.name,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
                                     }
-                                    .fillMaxWidth()
 
-                            )
 
-                            DropdownMenu(offset = DpOffset(y = (-30).dp, x = 0.dp),
-                                expanded = dropDownMenu,
-                                onDismissRequest = { dropDownMenu = false }) {
-
-                                category.forEach { category ->
-
-                                    DropdownMenuItem(onClick = {
-                                        menuCategory = category!!.name
-                                        menuCategoryUuid = category!!.uuid
-                                        dropDownMenu = false
-                                    }) {
-                                        Text(text = category!!.name, textAlign = TextAlign.Center)
-                                    }
                                 }
-
-
                             }
 
                         }

@@ -124,11 +124,15 @@ fun LoginScreen(
             modifier = Modifier
                 .shadow(5.dp, RoundedCornerShape(10.dp))
                 .clip(RoundedCornerShape(5.dp))
-                .requiredHeight(400.dp)
-                .width(400.dp)
+                .fillMaxHeight(0.9f)
+                .fillMaxWidth(0.5f)
 
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
 
                 Surface(
                     shape = RoundedCornerShape(
@@ -139,8 +143,8 @@ fun LoginScreen(
                     ),
                     elevation = 2.dp,
                     modifier = Modifier
-                        .height(100.dp)
-                        .width(400.dp),
+                        .fillMaxHeight(0.2f)
+                        .fillMaxWidth(),
                     color = MaterialTheme.colors.secondary
                 )
                 {
@@ -157,14 +161,20 @@ fun LoginScreen(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.9f),
+                    verticalArrangement = Arrangement.SpaceAround
                 ) {
 
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
-                        modifier = Modifier.padding(top = 5.dp, bottom = 5.dp),
+                        onValueChange = {
+                            if (it.length < 10) email = it
+                        },
+
                         label = {
                             Text(
                                 text = "Email"
@@ -172,14 +182,20 @@ fun LoginScreen(
                         })
                     OutlinedTextField(visualTransformation = PasswordVisualTransformation(),
                         value = password,
-                        onValueChange = { password = it },
-                        modifier = Modifier.padding(top = 5.dp, bottom = 5.dp),
+                        onValueChange = {
+                            if (it.length < 10) password = it
+                        },
                         label = {
                             Text(
                                 text = "password"
                             )
                         })
-                    Row {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
                         Button(
                             onClick = {
                                 if (email.isBlank() || password.isBlank()) {

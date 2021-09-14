@@ -34,19 +34,24 @@ fun TabRow(
         selectedTabIndex = tabIndex,
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.05f)
+            .fillMaxHeight(0.08f)
             .padding(0.dp)
             .shadow(10.dp)
 
     ) {
         tabData.forEachIndexed { index, screen ->
-            Tab(selected = tabIndex == index, onClick = {
+            Tab(selected = screen.route == navController.currentDestination?.route , onClick = {
                 tabIndex = index
                 navController.navigate(screen.route){
-                    popUpTo("Transaction"){
-                        inclusive =true
+                    if (navController.currentDestination != null){
 
+                    popUpTo(navController.currentDestination!!.route!!) {
+                        inclusive = true
+                        saveState = true
                     }
+                    }
+
+                    restoreState = true
                     launchSingleTop = true
                 }
             }, text = { Text(text = screen.route, color = Color.Black, fontSize = 18.sp) })
