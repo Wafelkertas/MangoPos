@@ -50,7 +50,7 @@ fun ItemCard(data: MenuItem, mainViewModel: MainViewModel, cartUuid: String, inE
                 if (inEditOrder) {
 
                     val findCart = mainViewModel.singleListOfCarts.value.find { theCart ->
-                        theCart.menuUuid == data.uuid
+                        theCart.menuUuid == data.menuUuid
                     }
 
 
@@ -67,7 +67,7 @@ fun ItemCard(data: MenuItem, mainViewModel: MainViewModel, cartUuid: String, inE
                 }
                 if (!inEditOrder) {
                     val findCart = mainViewModel.listOfCartNewOrder.value.find { theCart ->
-                        theCart.menuUuid == data.uuid
+                        theCart.menuUuid == data.menuUuid
                     }
 
 
@@ -110,7 +110,7 @@ fun ItemCard(data: MenuItem, mainViewModel: MainViewModel, cartUuid: String, inE
                     .padding(start = 5.dp)
             )
             Text(
-                text = data.price,
+                text = data.price.toString(),
                 modifier = Modifier
                     .align(CenterHorizontally)
                     .fillMaxWidth()
@@ -152,7 +152,7 @@ fun MenuEditGrid(data: MenuItem, mainViewModel: MainViewModel, cartUuid: String,
             .height(200.dp)
             .padding(10.dp)
             .clickable {
-                navController.navigate("EditMenu/${data.uuid}")
+                navController.navigate("EditMenu/${data.menuUuid}")
 
             }
 
@@ -180,8 +180,9 @@ fun MenuEditGrid(data: MenuItem, mainViewModel: MainViewModel, cartUuid: String,
                     .fillMaxWidth()
                     .padding(start = 5.dp)
             )
+
             Text(
-                text = data.price,
+                text = data.price.toString(),
                 modifier = Modifier
                     .align(CenterHorizontally)
                     .fillMaxWidth()

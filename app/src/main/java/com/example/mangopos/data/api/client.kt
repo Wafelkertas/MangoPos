@@ -38,22 +38,5 @@ val ktorHttpClient = HttpClient(OkHttp) {
         socketTimeoutMillis = TIME_OUT
     }
 
-//    install(Logging) {
-//        logger = object : Logger {
-//            override fun log(message: String) {
-//                Log.v("logger KTOR =>", message)
-//            }
-//        }
-//        level = LogLevel.ALL
-//    }
-//
-//
-//    install(ResponseObserver) {
-//        onResponse { httpResponse ->
-//            Log.d("HTTP Status", "${httpResponse.status.value}")
-//        }
-//    }
-//    install(DefaultRequest) {
-////        header(HttpHeaders.ContentType, ContentType.Application.Json)
-//    }
+
 }

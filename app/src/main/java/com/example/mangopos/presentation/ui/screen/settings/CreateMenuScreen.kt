@@ -309,15 +309,12 @@ fun CreateMenuScreen(
                                     mainViewModel.createMenu(
                                         accessToken = accessToken,
                                         menuItem = MenuItem(
-                                            categoryUuid = menuCategoryUuid,
-                                            createdAt = "",
-                                            description = menuDescription,
-                                            id = 0,
                                             image = "",
                                             name = menuName,
-                                            price = menuPrice,
-                                            updatedAt = "",
-                                            uuid = ""
+                                            price = menuPrice.toInt(),
+                                            slug = "",
+                                            menuUuid = "",
+                                            quantity = 0
                                         ),
                                         uri = realPath
                                     )

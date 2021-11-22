@@ -1,35 +1,18 @@
 package com.example.mangopos.data.repository
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
-import coil.ImageLoader
-import coil.request.ImageRequest
 import com.example.mangopos.data.EndPoints
-import com.example.mangopos.data.api.Api
-import com.example.mangopos.data.objects.dto.CategoryResponse
-import com.example.mangopos.data.objects.dto.MenuItem
-import com.example.mangopos.data.objects.dto.MenuResponse
-import com.example.mangopos.data.objects.dto.UpdateMenuResponse
+import com.example.mangopos.data.objects.dto.*
 import com.example.mangopos.utils.Resource
 import com.example.mangopos.utils.errorHandler
 import io.ktor.client.*
-import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
-import io.ktor.client.utils.*
 import io.ktor.http.*
-import io.ktor.util.*
-import io.ktor.utils.io.streams.*
-import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.net.URI
 
 class MenuRepository(
-    private val api: HttpClient,
-    private val retrofit: Api,
-    private val imageLoader: ImageLoader,
-    private val context: Context
+    private val api: HttpClient
 ) {
     suspend fun getListMenu(accessToken: String): Resource<MenuResponse> {
         val response = try {
@@ -44,9 +27,9 @@ class MenuRepository(
         return Resource.Success(response)
     }
 
-    suspend fun getListCategory(accessToken: String): Resource<CategoryResponse> {
+    suspend fun getListCategory(accessToken: String): Resource<CategoryResponseItem> {
         val response = try {
-            api.get<CategoryResponse>("${EndPoints.BASE_URL}${EndPoints.CATEGORY}") {
+            api.get<CategoryResponseItem>("${EndPoints.BASE_URL}${EndPoints.CATEGORY}") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header("Authorization", "Bearer $accessToken")
             }
@@ -59,19 +42,18 @@ class MenuRepository(
 
     suspend fun updateMenu(
         accessToken: String,
-        menuItem: MenuItem,
+        menuItem: com.example.mangopos.data.objects.dto.MenuItem,
         uri: String
     ): Resource<UpdateMenuResponse> {
 
         val response = try {
-            api.post<UpdateMenuResponse>("${EndPoints.BASE_URL}${EndPoints.MENU_URL_PATCH}/${menuItem.uuid}") {
+            api.post<UpdateMenuResponse>("${EndPoints.BASE_URL}${EndPoints.MENU_URL_PATCH}/${menuItem.menuUuid}") {
                 header("Authorization", "Bearer $accessToken")
                 body = MultiPartFormDataContent(
                     formData {
                         append("price", "${menuItem.price}")
                         append("name", "${menuItem.name}")
-                        append("description", "${menuItem.description}")
-                        append("category_uuid", "${menuItem.categoryUuid}")
+                        append("category_uuid", "${menuItem.menuUuid}")
                         if (uri.isNotEmpty()){
                             append("image", File(uri).readBytes(), Headers.build {
                                 append(HttpHeaders.ContentType, ContentType.Image.JPEG)
@@ -98,7 +80,7 @@ class MenuRepository(
 
     suspend fun newMenu(
         accessToken: String,
-        menuItem: MenuItem,
+        menuItem: com.example.mangopos.data.objects.dto.MenuItem,
         uri: String
     ): Resource<UpdateMenuResponse> {
 
@@ -113,8 +95,7 @@ class MenuRepository(
                     formData {
                         append("price", "${menuItem.price}")
                         append("name", "${menuItem.name}")
-                        append("description", "${menuItem.description}")
-                        append("category_uuid", "${menuItem.categoryUuid}")
+                        append("category_uuid", "${menuItem.menuUuid}")
                         append("image", image.readBytes(), Headers.build {
                             append(HttpHeaders.ContentType, ContentType.Image.JPEG)
                             append(HttpHeaders.ContentDisposition, "filename=$uri")

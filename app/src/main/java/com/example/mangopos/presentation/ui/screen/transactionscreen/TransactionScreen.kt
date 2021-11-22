@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mangopos.data.objects.dto.OrderData
 import com.example.mangopos.data.objects.dto.OrderItem
 import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.component.ListComponentTransaction
@@ -36,7 +37,7 @@ fun TransactionScreen(
     scaffoldState: ScaffoldState,
     drawerState: BottomDrawerState,
     navController: NavController,
-    listOfOrder: List<OrderItem>
+    listOfOrder: List<OrderData>
 ) {
 
     val coroutineScope = rememberCoroutineScope()

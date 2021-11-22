@@ -88,17 +88,17 @@ class MainViewModel @Inject constructor(
 
     // State for list of Object
     val listOfChartItem = mutableStateOf<List<ChartItem>>(listOf())
-    val listOfOrder = mutableStateOf<List<OrderItem>>(listOf())
+    val listOfOrder = mutableStateOf<List<OrderData>>(listOf())
     val listOfMenu = mutableStateOf<List<MenuItem>>(listOf())
     val listOfInvoices = mutableStateOf<List<InvoicesItem>>(listOf())
-    val listOfCategory = mutableStateOf<List<Category?>>(listOf(null))
+    val listOfCategory = mutableStateOf<List<CategoryItem?>>(listOf(null))
 
     val invoicesResponse = mutableStateOf<InvoicesResponse?>(null)
 
-    val orderResponse = mutableStateOf<OrderResponse?>(null)
+    val orderResponse = mutableStateOf<AllOrderResponse?>(null)
 
     // State hold when new order created
-    val listOfCartNewOrder = mutableStateOf<List<Cart>>(listOf())
+    val listOfCartNewOrder = mutableStateOf<List<MenuItem>>(listOf())
     val newOrderStatus = mutableStateOf<Boolean?>(null)
 
     // State for hold when edit an order
@@ -134,6 +134,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             delay(10000)
             Log.d("listOfChartItem", listOfChartItem.value.toString())
+            Log.d("listOfOrder", listOfOrder.value.toString())
         }
     }
 
@@ -149,11 +150,11 @@ class MainViewModel @Inject constructor(
                     with(sharedPreferences.edit()) {
                         putString(
                             R.string.access_token.toString(),
-                            response.data!!.user.access_token
+                            response.data!!.access_token
                         )
                         apply()
                     }
-                    accessToken.value = response.data!!.user.access_token
+                    accessToken.value = response.data!!.access_token
                 }
 
                 is Resource.Error -> {
@@ -183,7 +184,7 @@ class MainViewModel @Inject constructor(
 
     fun filterMenuToBeEdited(uuid: String) {
         val menuEdit = listOfMenu.value.first { menuItem ->
-            menuItem.uuid == uuid
+            menuItem.menuUuid == uuid
         }
 
         editMenu.value = menuEdit
@@ -218,7 +219,7 @@ class MainViewModel @Inject constructor(
             when (response) {
                 is Resource.Success -> {
 
-                    listOfCategory.value = response.data!!.listOfCategory
+                    listOfCategory.value = response.data!!.data
 
 
                 }
@@ -322,7 +323,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun getAllOrder(accessToken: String) {
-        var allResponse: List<OrderItem> = listOf()
+        var allResponse: List<OrderData> = listOf()
         var lastPage = 0
         var currentPage = 1
 
@@ -330,12 +331,12 @@ class MainViewModel @Inject constructor(
             val firstResponse =
                 orderRepository.getListOrder(accessToken = accessToken, page = 1).data
             if (firstResponse != null) {
-                lastPage = firstResponse.lastPage
+                lastPage = firstResponse.totalPage
             }
             while (currentPage <= lastPage) {
                 val response =
                     orderRepository.getListOrder(accessToken = accessToken, page = currentPage).data
-                allResponse += response!!.orderItem
+                allResponse += response!!.orderData
                 listOfOrder.value = allResponse
                 currentPage++
             }
@@ -371,6 +372,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun filterOrder(){
+
+    }
+
 
     fun getSingleOrder(accessToken: String, orderUUID: String) {
         Log.d("getSingleCartInvoked", "getSingleCartInvoked")
@@ -381,7 +386,8 @@ class MainViewModel @Inject constructor(
                 is Resource.Success -> {
 
                     singleOrderResponse.value = response.data!!
-                    singleListOfCarts.value = response.data.carts
+                    singleListOfCarts.value = response.data.menus
+                    Log.d("succesLoadMenu", singleListOfCarts.value.toString())
 
 
                 }
@@ -401,7 +407,7 @@ class MainViewModel @Inject constructor(
             when (response) {
 
                 is Resource.Success -> {
-                    listOfMenu.value = response.data!!.data.menuItem
+                    listOfMenu.value = response.data!!.menuData
 
                 }
 
@@ -520,7 +526,7 @@ class MainViewModel @Inject constructor(
 
             // List dari cart objek
             val list = pdfObject.listOfCarts.map { cart ->
-                cartListing(application = application, cart = cart)
+                cartListing(application = application, Cart = cart)
             }
 
 
@@ -771,7 +777,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun cartListing(application: Context, cart: Cart): PDFHorizontalView {
+    fun cartListing(application: Context, Cart: Cart): PDFHorizontalView {
         val cartHorizontalView = PDFHorizontalView(application)
         val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 20)
         layoutParams.setMargins(0, 0, 0, 0)
@@ -781,16 +787,16 @@ class MainViewModel @Inject constructor(
 
 
         val cartName =
-            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.menuName)
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(Cart.menuName)
         val cartQuantity =
-            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.quantity.toString())
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(Cart.quantity.toString())
         val cartPrice =
-            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(cart.price)
+            PDFTextView(application, PDFTextView.PDF_TEXT_SIZE.P).setText(Cart.price)
         val cartTotalPrice =
             PDFTextView(
                 application,
                 PDFTextView.PDF_TEXT_SIZE.P
-            ).setText((cart.price.toInt() * cart.quantity).toString())
+            ).setText((Cart.price.toInt() * Cart.quantity).toString())
 
         cartName.setLayout(
             LinearLayout.LayoutParams(

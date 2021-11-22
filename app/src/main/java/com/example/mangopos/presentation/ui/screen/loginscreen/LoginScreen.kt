@@ -38,7 +38,7 @@ fun LoginScreen(
     val coroutineScope = rememberCoroutineScope()
 
 
-    var email by remember { mutableStateOf("Mongos") }
+    var email by remember { mutableStateOf("mangomase") }
     var password by remember { mutableStateOf("password") }
 
     val error by remember { mainViewModel.networkErrorLogin }

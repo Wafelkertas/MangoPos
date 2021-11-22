@@ -463,7 +463,7 @@ fun MenuOrderScreen(
 @Composable
 fun SwipeToDismissOrder(
     dismissState: DismissState,
-    cart: Cart,
+    cart: MenuItem,
     unread: Boolean,
     index: Int,
     incrementEvent: () -> Unit,
@@ -503,7 +503,7 @@ fun SwipeToDismissOrder(
                             .weight(1f)
                     )
                     Text(
-                        text = cart.menuName,
+                        text = cart.name,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()

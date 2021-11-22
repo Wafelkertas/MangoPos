@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.Cart
+import com.example.mangopos.data.objects.dto.MenuItem
 import com.example.mangopos.data.objects.dto.PayRequest
 import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.ui.navigation.Screen
@@ -72,9 +73,9 @@ fun CheckOutScreen(
 
     if (singleOrderResponse != null) {
         LaunchedEffect(key1 = true) {
-            totalPrice = calculateTotalPrice(singleOrderResponse!!.carts)
+            totalPrice = calculateTotalPrice(singleOrderResponse!!.menus)
             ppn = calculatePPN(totalPrice)
-            totalItems = calculateItems(singleOrderResponse!!.carts)
+            totalItems = calculateItems(singleOrderResponse!!.menus)
             sumTotalPrice =
                 calculateSumTotal(
                     totalPrice = totalPrice,
@@ -138,7 +139,7 @@ fun CheckOutScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Checkout Order ${singleOrderResponse!!.customerName}",
+                                text = "Checkout Order ${singleOrderResponse!!.name}",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight(2),
                                 modifier = Modifier.padding(bottom = 10.dp)
@@ -186,7 +187,7 @@ fun CheckOutScreen(
 
                             ) {
 
-                                itemsIndexed(singleOrderResponse!!.carts) { index, item ->
+                                itemsIndexed(singleOrderResponse!!.menus) { index, item ->
                                     CheckoutItem(item = item, index = index)
                                 }
                             }
@@ -349,8 +350,8 @@ fun CheckOutScreen(
                                         mainViewModel.payOrder(
                                             accessToken = accessToken, payRequest = PayRequest(
                                                 cash = customerCash.toInt(),
-                                                moneyChange = change.toInt(),
-                                                name = singleOrderResponse!!.customerName,
+                                                moneyChange = change,
+                                                name = singleOrderResponse!!.name,
                                                 quantity = totalItems,
                                                 totalPrice = totalPrice,
                                                 total = sumTotalPrice
@@ -396,7 +397,7 @@ fun calculateChange(sumTotal: Int, cash: String): Int {
 
 }
 
-fun calculateItems(listCart: List<Cart>): Int {
+fun calculateItems(listCart: List<MenuItem>): Int {
     var totalItems = 0
     for (i in listCart) {
         totalItems += i.quantity
@@ -408,7 +409,7 @@ fun calculatePPN(totalPrice: Int): Int {
     return totalPrice * 10 / 100
 }
 
-fun calculateTotalPrice(listCart: List<Cart>): Int {
+fun calculateTotalPrice(listCart: List<MenuItem>): Int {
     var totalPrice: Int = 0
 
 
@@ -421,7 +422,7 @@ fun calculateTotalPrice(listCart: List<Cart>): Int {
 }
 
 @Composable
-fun CheckoutItem(item: Cart, index: Int) {
+fun CheckoutItem(item: MenuItem, index: Int) {
     Column(modifier = Modifier.padding(5.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -434,7 +435,7 @@ fun CheckoutItem(item: Cart, index: Int) {
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "${item.menuName}",
+                text = "${item.name}",
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),

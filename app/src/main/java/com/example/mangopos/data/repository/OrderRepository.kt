@@ -15,9 +15,9 @@ class OrderRepository(
     private val api: HttpClient
 ) {
 
-    suspend fun getListOrder(accessToken : String, page:Int): Resource<OrderResponse> {
+    suspend fun getListOrder(accessToken : String, page:Int): Resource<AllOrderResponse> {
         val response = try {
-            api.get<OrderResponse>("${EndPoints.BASE_URL}${EndPoints.ORDER_URL}page=$page") {
+            api.get<AllOrderResponse>("${EndPoints.BASE_URL}${EndPoints.ORDER_URL}page=$page") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
                 header("Authorization", "Bearer $accessToken")
 
@@ -43,7 +43,7 @@ class OrderRepository(
         return Resource.Success(response)
     }
 
-    suspend fun newOrder(accessToken: String, singleOrderRequest: SingleOrderRequest) : Resource<SuccessOrderResponse>{
+    suspend fun newOrder(accessToken: String, singleOrderRequest: SingleOrderResponse) : Resource<SuccessOrderResponse>{
         val response = try {
             api.post<SuccessOrderResponse>("${EndPoints.BASE_URL}${EndPoints.NEW_ORDER}") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
@@ -58,7 +58,7 @@ class OrderRepository(
         return Resource.Success(response)
     }
 
-    suspend fun updateOrder(accessToken: String, singleOrderRequest: SingleOrderRequest, orderUuid:String) : Resource<SuccessOrderResponse>{
+    suspend fun updateOrder(accessToken: String, singleOrderRequest: SingleOrderResponse, orderUuid:String) : Resource<SuccessOrderResponse>{
         val response = try {
             api.patch<SuccessOrderResponse>("${EndPoints.BASE_URL}${EndPoints.CART_URL}${orderUuid}") {
                 header(HttpHeaders.ContentType, ContentType.Application.Json)

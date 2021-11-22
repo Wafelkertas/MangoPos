@@ -158,7 +158,7 @@ fun Navigation(
                                 "MangoPos",
                                 color = Color.Black,
                                 fontSize = 26.sp,
-                                fontWeight = FontWeight(200)
+                                fontWeight = FontWeight(300)
                             )
                         }
 

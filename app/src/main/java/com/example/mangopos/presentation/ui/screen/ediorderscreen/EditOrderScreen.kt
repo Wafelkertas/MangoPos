@@ -1,7 +1,6 @@
 package com.example.mangopos.presentation.ui.screen.ediorderscreen
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -23,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.navigation.NavController
 import com.example.mangopos.data.objects.dto.Cart
 import com.example.mangopos.data.objects.dto.MenuItem
@@ -131,7 +129,7 @@ fun EditOrderScreen(
                         )
 
                         Text(
-                            text = "Customer Name : ${singleOrderResponse!!.customerName}",
+                            text = "Customer Name : ${singleOrderResponse!!.name}",
                             textAlign = TextAlign.Start,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -253,7 +251,7 @@ fun EditOrderScreen(
 //                                        CartItem(carts = data, index = index, data.quantity)
                                         SwipeToDismiss(
                                             dismissState = dismissState,
-                                            cart = data,
+                                            menuItem = data,
                                             unread = unread,
                                             index = index,
                                             incrementEvent = {
@@ -308,7 +306,7 @@ fun EditOrderScreen(
                                     mainViewModel.editAnOrder(
                                         singleOrderRequest = SingleOrderRequest(
                                             carts = requestListCart(singleListOfCarts = singleListOfCarts),
-                                            customerName = singleOrderResponse!!.customerName,
+                                            customerName = singleOrderResponse!!.name,
 
 
                                             ), orderUUID = singleOrderResponse!!.uuid
@@ -341,8 +339,8 @@ fun EditOrderScreen(
     }
 }
 
-fun requestListCart(singleListOfCarts: List<Cart>): List<Cart> {
-    var newList = listOf<Cart>()
+fun requestListCart(singleListOfCarts: List<MenuItem>): List<MenuItem> {
+    var newList = listOf<MenuItem>()
     if (singleListOfCarts.isEmpty()) {
         newList = listOf()
     }
@@ -357,7 +355,7 @@ fun requestListCart(singleListOfCarts: List<Cart>): List<Cart> {
 @Composable
 fun SwipeToDismiss(
     dismissState: DismissState,
-    cart: Cart,
+    menuItem: MenuItem,
     unread: Boolean,
     index: Int,
     incrementEvent: () -> Unit,
@@ -397,7 +395,7 @@ fun SwipeToDismiss(
                             .weight(1f)
                     )
                     Text(
-                        text = cart.menuName,
+                        text = menuItem.name,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -417,7 +415,7 @@ fun SwipeToDismiss(
                             )
                         }
                         Text(
-                            text = cart.quantity.toString(),
+                            text = menuItem.quantity.toString(),
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -429,7 +427,7 @@ fun SwipeToDismiss(
                         IconButton(
                             onClick = decrementEvent,
                             modifier = Modifier.weight(1f),
-                            enabled = cart.quantity > 0
+                            enabled = menuItem.quantity > 0
                         ) {
 
                             Icon(

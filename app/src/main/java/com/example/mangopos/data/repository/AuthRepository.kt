@@ -19,11 +19,11 @@ class AuthRepository(
     private val api: HttpClient
 ) {
 
-    suspend fun repositoryLogin(username:String, password:String): Resource<UsersResponse> {
+    suspend fun repositoryLogin(username:String, password:String): Resource<User> {
 
         val response = try {
 
-             api.post<UsersResponse>("$BASE_URL$LOGIN_URL") {
+             api.post<User>("$BASE_URL$LOGIN_URL") {
                  header(HttpHeaders.ContentType, ContentType.Application.Json)
                 body = UserRequest(username = username, password = password)
             }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import coil.ImageLoader
 import com.example.mangopos.R
-import com.example.mangopos.data.api.Api
 import com.example.mangopos.data.api.ktorHttpClient
 import com.example.mangopos.data.repository.AuthRepository
 import com.example.mangopos.data.repository.InvoicesRepository
@@ -61,11 +60,8 @@ object AppModule {
     @Singleton
     @Provides
     fun provideMenuRepository(
-        retrofit:Api,
-        api:HttpClient,
-        @ApplicationContext appContext : Context,
-        imageLoader: ImageLoader
-    ) = MenuRepository(api, retrofit,imageLoader, appContext)
+        api:HttpClient
+    ) = MenuRepository(api)
 
     @Singleton
     @Provides
@@ -82,21 +78,7 @@ object AppModule {
         return ktorHttpClient
     }
 
-    @Singleton
-    @Provides
-    fun provideRetrofit(): Api{
-        val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val client = OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .build()
-        return Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("https://mcalfinm.my.id/mangopos/api/v1/")
-            .client(client)
-            .build()
-            .create(Api::class.java)
-    }
+
 
     @Singleton
     @Provides

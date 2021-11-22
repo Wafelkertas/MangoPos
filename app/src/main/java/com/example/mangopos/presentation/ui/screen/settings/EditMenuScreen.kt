@@ -78,7 +78,7 @@ fun EditMenuScreen(
         var menuName by remember { mutableStateOf(value = "${menuItem!!.name}") }
         var menuPrice by remember { mutableStateOf("${menuItem!!.price}") }
         var menuCategory by remember { mutableStateOf("${category[0]!!.name}") }
-        var menuDescription by remember { mutableStateOf(value = "${menuItem!!.description}") }
+
         var menuImage by remember { mutableStateOf(menuItem!!.image) }
         var menuCategoryUuid by remember { mutableStateOf("${category[0]?.uuid}") }
 
@@ -136,15 +136,7 @@ fun EditMenuScreen(
                                         .fillMaxWidth(),
                                     maxLines = 1
                                 )
-                                OutlinedTextField(
-                                    label = { Text(text = "Deksripsi Makanan") },
-                                    value = menuDescription,
-                                    onValueChange = { menuDescription = it },
-                                    modifier = Modifier
-                                        .padding(top = 5.dp, bottom = 5.dp)
-                                        .fillMaxWidth(),
-                                    maxLines = 2
-                                )
+
 
 
                                 OutlinedTextField(enabled = false,
@@ -307,16 +299,13 @@ fun EditMenuScreen(
                                 Button(onClick = {
                                     mainViewModel.updateMenu(
                                         accessToken = accessToken,
-                                        menuItem = MenuItem(
-                                            categoryUuid = menuCategoryUuid,
-                                            createdAt = "",
-                                            description = menuDescription,
-                                            id = 0,
+                                        MenuItem(
                                             image = "",
                                             name = menuName,
-                                            price = menuPrice,
-                                            updatedAt = "",
-                                            uuid = menuItem!!.uuid
+                                            price = menuPrice.toInt(),
+                                            slug = "",
+                                            menuUuid = "",
+                                            quantity = 0
                                         ),
                                         uri = realPath
                                     )

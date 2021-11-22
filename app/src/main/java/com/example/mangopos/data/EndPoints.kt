@@ -1,7 +1,7 @@
 package com.example.mangopos.data
 
 object EndPoints {
-     const val BASE_URL = "https://mcalfinm.my.id/mangopos/api/v1"
+     const val BASE_URL = "https://mangomase.herokuapp.com/api/v1"
      const val LOGIN_URL = "/auth/login"
      const val ORDER_URL = "/orders?"
      const val SINGLE_ORDER_URL = "/orders/"

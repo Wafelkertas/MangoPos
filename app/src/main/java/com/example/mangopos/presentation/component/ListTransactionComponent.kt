@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mangopos.data.objects.dto.OrderData
 import com.example.mangopos.data.objects.dto.OrderItem
 import com.example.mangopos.presentation.MainViewModel
 import com.example.mangopos.presentation.ui.theme.ffdd49
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ListComponentTransaction(
     navController: NavController,
-    data: List<OrderItem?>,
+    data: List<OrderData?>,
     mainViewModel: MainViewModel,
     drawerState: BottomDrawerState,
     accessToken: String
@@ -65,7 +66,7 @@ fun ListComponentTransaction(
 @Composable
 fun TransactionItem(
     navController: NavController,
-    data: OrderItem?,
+    data: OrderData?,
     mainViewModel: MainViewModel,
     drawerState: BottomDrawerState,
     index: Int
@@ -118,29 +119,12 @@ fun TransactionItem(
                 )
                 Text(
                     textAlign = TextAlign.Center,
-                    text = data.customerName,
+                    text = data.name,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .weight(0.25f)
                 )
-                Text(
-                    textAlign = TextAlign.Center,
-                    text = "${data.createdAt.dropLast(17)}  ${
-                        data.createdAt.dropLast(7).drop(11)
-                    }  ",
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .weight(0.25f)
-                )
-                Text(
-                    textAlign = TextAlign.Center,
-                    text = "${data.updatedAt.dropLast(17)}  ${
-                        data.updatedAt.dropLast(7).drop(11)
-                    } ",
-                    modifier = Modifier
-                        .weight(0.25f)
-                        .align(Alignment.CenterVertically)
-                )
+
 
 
             }

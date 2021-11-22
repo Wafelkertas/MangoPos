@@ -35,37 +35,28 @@ import java.lang.Error
 import java.lang.Exception
 
 
-fun menuToCartItem(menu: MenuItem, cartUuid: String): Cart {
+fun menuToCartItem(menu: MenuItem, cartUuid: String): MenuItem {
     return (
-            Cart(
+            MenuItem(
                 image = "",
-                menuName = menu.name,
+                name = menu.name,
                 price = menu.price,
-                menuUuid = menu.uuid,
+                menuUuid = menu.menuUuid,
                 quantity = 1,
-                uuid = "",
-                createdAt = "",
-                id = 0,
-                orderUuid = cartUuid,
-                updatedAt = ""
+                slug = ""
             )
             )
 }
 
-fun addItemToList(list: List<Cart>, oldItem: Cart): List<Cart> {
+fun addItemToList(list: List<MenuItem>, oldItem: MenuItem): List<MenuItem> {
 
-    val newItem = Cart(
-        createdAt = oldItem.createdAt,
-        id = oldItem.id,
+    val newItem = MenuItem(
         image = oldItem.image,
-        menuName = oldItem.menuName,
+        name = oldItem.name,
         menuUuid = oldItem.menuUuid,
-        orderUuid = oldItem.createdAt,
         price = oldItem.price,
         quantity = oldItem.quantity + 1,
-        updatedAt = oldItem.updatedAt,
-        uuid = oldItem.uuid
-
+        slug = oldItem.slug
     )
     val position = list.indexOf(oldItem)
 
@@ -77,19 +68,15 @@ fun addItemToList(list: List<Cart>, oldItem: Cart): List<Cart> {
     return newList
 }
 
-fun removeItemToList(list: List<Cart>, oldItem: Cart): List<Cart> {
+fun removeItemToList(list: List<MenuItem>, oldItem: MenuItem): List<MenuItem> {
 
-    val newItem = Cart(
-        createdAt = oldItem.createdAt,
-        id = oldItem.id,
+    val newItem = MenuItem(
         image = oldItem.image,
-        menuName = oldItem.menuName,
+        name = oldItem.name,
         menuUuid = oldItem.menuUuid,
-        orderUuid = oldItem.createdAt,
         price = oldItem.price,
         quantity = oldItem.quantity - 1,
-        updatedAt = oldItem.updatedAt,
-        uuid = oldItem.uuid
+        slug = oldItem.slug
 
     )
     val position = list.indexOf(oldItem)
@@ -117,7 +104,7 @@ fun newAddedToList(list: List<InvoicesItem>, oldItem: List<InvoicesItem>): List<
 }
 
 
-fun deleteItemFromList(list: List<Cart>, oldItem: Cart): List<Cart> {
+fun deleteItemFromList(list: List<MenuItem>, oldItem: MenuItem): List<MenuItem> {
 
 
     val newList = list.filterNot { data ->
